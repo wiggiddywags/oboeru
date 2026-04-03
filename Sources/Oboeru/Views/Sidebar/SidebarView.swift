@@ -72,7 +72,7 @@ struct SidebarView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(.accentColor, in: Capsule())
+                    .background(Color.accentColor, in: Capsule())
             }
         }
         .contentShape(Rectangle())
@@ -105,7 +105,7 @@ private struct DeckRowView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(.accentColor, in: Capsule())
+                    .background(Color.accentColor, in: Capsule())
             }
         }
         .contextMenu {
