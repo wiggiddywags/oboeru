@@ -27,10 +27,10 @@ final class StudySession {
     }
 
     struct RatingPreviews {
-        let again: FSRS.RecordLogItem
-        let hard:  FSRS.RecordLogItem
-        let good:  FSRS.RecordLogItem
-        let easy:  FSRS.RecordLogItem
+        let again: RecordLogItem
+        let hard:  RecordLogItem
+        let good:  RecordLogItem
+        let easy:  RecordLogItem
     }
 
     struct SessionSummary {
@@ -100,17 +100,17 @@ final class StudySession {
     func showAnswer() {
         guard case .front = phase, let card = currentCard else { return }
         let deck = card.deck ?? decks.first!
-        let allPreviews = fsrsService.previewRatings(for: card, deck: deck)
+        let preview = fsrsService.previewRatings(for: card, deck: deck)
         guard
-            let again = allPreviews[.again],
-            let hard  = allPreviews[.hard],
-            let good  = allPreviews[.good],
-            let easy  = allPreviews[.easy]
+            let again = preview[.again],
+            let hard  = preview[.hard],
+            let good  = preview[.good],
+            let easy  = preview[.easy]
         else { return }
         phase = .back(previews: RatingPreviews(again: again, hard: hard, good: good, easy: easy))
     }
 
-    func rate(_ rating: FSRS.Rating) {
+    func rate(_ rating: Rating) {
         guard case .back = phase, let card = currentCard else { return }
         let durationMs = Int(Date().timeIntervalSince(cardStartTime) * 1000)
         let deck = card.deck ?? decks.first!
@@ -129,7 +129,7 @@ final class StudySession {
         mutableStats.record(rating: rating, wasNew: wasNew)
 
         // Re-insert cards rated "Again" ~10 positions ahead so they resurface soon.
-        if rating == .again && queue.count > 2 {
+        if rating == Rating.again && queue.count > 2 {
             let insertAt = min(queue.count, 10)
             queue.insert(card, at: insertAt)
             totalQueueSize += 1
@@ -297,7 +297,7 @@ private struct MutableStats {
     var newCards = 0
     var total = 0
 
-    mutating func record(rating: FSRS.Rating, wasNew: Bool) {
+    mutating func record(rating: Rating, wasNew: Bool) {
         total += 1
         if wasNew { newCards += 1 }
         switch rating {

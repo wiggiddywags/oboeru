@@ -4,7 +4,7 @@ import FSRS
 struct RatingBarView: View {
 
     let previews: StudySession.RatingPreviews
-    let onRate: (FSRS.Rating) -> Void
+    let onRate: (Rating) -> Void
 
     var body: some View {
         HStack(spacing: 12) {
