@@ -1,6 +1,5 @@
 import Foundation
 import SwiftData
-import FSRS
 
 // StudySession orchestrates a review session from queue building to completion.
 // It is @Observable so ReviewSessionView can bind to phase/progress directly.
@@ -26,12 +25,8 @@ final class StudySession {
         }
     }
 
-    struct RatingPreviews {
-        let again: RecordLogItem
-        let hard:  RecordLogItem
-        let good:  RecordLogItem
-        let easy:  RecordLogItem
-    }
+    // RatingPreviews is just a typealias — FSRSPreviews already has again/hard/good/easy
+    typealias RatingPreviews = FSRSPreviews
 
     struct SessionSummary {
         let totalReviewed: Int
@@ -100,17 +95,11 @@ final class StudySession {
     func showAnswer() {
         guard case .front = phase, let card = currentCard else { return }
         let deck = card.deck ?? decks.first!
-        let preview = fsrsService.previewRatings(for: card, deck: deck)
-        guard
-            let again = preview[.again],
-            let hard  = preview[.hard],
-            let good  = preview[.good],
-            let easy  = preview[.easy]
-        else { return }
-        phase = .back(previews: RatingPreviews(again: again, hard: hard, good: good, easy: easy))
+        let previews = fsrsService.previewRatings(for: card, deck: deck)
+        phase = .back(previews: previews)
     }
 
-    func rate(_ rating: Rating) {
+    func rate(_ rating: OboerRating) {
         guard case .back = phase, let card = currentCard else { return }
         let durationMs = Int(Date().timeIntervalSince(cardStartTime) * 1000)
         let deck = card.deck ?? decks.first!
@@ -129,7 +118,7 @@ final class StudySession {
         mutableStats.record(rating: rating, wasNew: wasNew)
 
         // Re-insert cards rated "Again" ~10 positions ahead so they resurface soon.
-        if rating == Rating.again && queue.count > 2 {
+        if rating == OboerRating.again && queue.count > 2 {
             let insertAt = min(queue.count, 10)
             queue.insert(card, at: insertAt)
             totalQueueSize += 1
@@ -297,7 +286,7 @@ private struct MutableStats {
     var newCards = 0
     var total = 0
 
-    mutating func record(rating: Rating, wasNew: Bool) {
+    mutating func record(rating: OboerRating, wasNew: Bool) {
         total += 1
         if wasNew { newCards += 1 }
         switch rating {

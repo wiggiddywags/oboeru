@@ -1,5 +1,4 @@
 import SwiftUI
-import FSRS
 
 struct ReviewSessionView: View {
 
@@ -32,7 +31,7 @@ struct ReviewSessionView: View {
                         CardBackView(card: card)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                         Divider()
-                        RatingBarView(previews: previews) { (rating: Rating) in
+                        RatingBarView(previews: previews) { rating in
                             session.rate(rating)
                         }
                     }

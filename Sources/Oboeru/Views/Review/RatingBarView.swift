@@ -1,41 +1,16 @@
 import SwiftUI
-import FSRS
 
 struct RatingBarView: View {
 
-    let previews: StudySession.RatingPreviews
-    let onRate: (Rating) -> Void
+    let previews: FSRSPreviews
+    let onRate: (OboerRating) -> Void
 
     var body: some View {
         HStack(spacing: 12) {
-            RatingButton(
-                label: "Again",
-                interval: previews.again.intervalLabel,
-                color: .red,
-                key: "1",
-                action: { onRate(.again) }
-            )
-            RatingButton(
-                label: "Hard",
-                interval: previews.hard.intervalLabel,
-                color: .orange,
-                key: "2",
-                action: { onRate(.hard) }
-            )
-            RatingButton(
-                label: "Good",
-                interval: previews.good.intervalLabel,
-                color: .green,
-                key: "3",
-                action: { onRate(.good) }
-            )
-            RatingButton(
-                label: "Easy",
-                interval: previews.easy.intervalLabel,
-                color: .blue,
-                key: "4",
-                action: { onRate(.easy) }
-            )
+            RatingButton(label: "Again", interval: previews.again.intervalLabel, color: .red,    key: "1") { onRate(.again) }
+            RatingButton(label: "Hard",  interval: previews.hard.intervalLabel,  color: .orange, key: "2") { onRate(.hard)  }
+            RatingButton(label: "Good",  interval: previews.good.intervalLabel,  color: .green,  key: "3") { onRate(.good)  }
+            RatingButton(label: "Easy",  interval: previews.easy.intervalLabel,  color: .blue,   key: "4") { onRate(.easy)  }
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
