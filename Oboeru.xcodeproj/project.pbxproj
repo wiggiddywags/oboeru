@@ -31,7 +31,6 @@
 		B7E60376ADFD4303FD52B6A6 /* FSRSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D76549EABF3EB7E0B3F64B /* FSRSService.swift */; };
 		BFD40DC46996FFD08617E7EE /* CardEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 624483CAFFD6C90AF3C6AAA3 /* CardEditorSheet.swift */; };
 		C36DE889F1A0A4BCF948B48D /* RatingBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D85E9B685EDE08E1B8A05 /* RatingBarView.swift */; };
-		CC31004FBCC4F901AAA58F7C /* ZipFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = F0F6E64DE3F96294741608B7 /* ZipFoundation */; };
 		CEEB090C32465F591A4054AC /* Deck.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2BD46C3C836C4B541448317 /* Deck.swift */; };
 		D20ECB25B614A341C26E1FB2 /* ReviewSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABC40F9308D1EEB4BE7ABE1 /* ReviewSessionView.swift */; };
 		D392D92F0DDEBBC6F6371061 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FF46C87F75F91CC1C2878C /* ColorExtensions.swift */; };
@@ -73,17 +72,6 @@
 		FE7DFC4728ED06C9A2157FB8 /* StatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsService.swift; sourceTree = "<group>"; };
 		FEC7D69BA27D27BEB2ECA8AE /* ImportSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSheetView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		C97984B475B08FF944F6DA2B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CC31004FBCC4F901AAA58F7C /* ZipFoundation in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0F6CA514E120ADF80E520DF3 /* Settings */ = {
@@ -251,7 +239,6 @@
 			buildConfigurationList = 0F0373CEFD891A84C564EF06 /* Build configuration list for PBXNativeTarget "Oboeru" */;
 			buildPhases = (
 				28280DC058FAA4C484B870C6 /* Sources */,
-				C97984B475B08FF944F6DA2B /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -259,7 +246,6 @@
 			);
 			name = Oboeru;
 			packageProductDependencies = (
-				F0F6E64DE3F96294741608B7 /* ZipFoundation */,
 			);
 			productName = Oboeru;
 			productReference = B04DCF57F10F5CF72D23CEF2 /* Oboeru.app */;
@@ -289,9 +275,6 @@
 			);
 			mainGroup = 745D28C9B6C63F98BE93783C;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				4C97F5B89AD3D5EA3FC236A6 /* XCRemoteSwiftPackageReference "ZipFoundation" */,
-			);
 			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
@@ -529,25 +512,6 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		4C97F5B89AD3D5EA3FC236A6 /* XCRemoteSwiftPackageReference "ZipFoundation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/weichsel/ZipFoundation.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.19;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		F0F6E64DE3F96294741608B7 /* ZipFoundation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4C97F5B89AD3D5EA3FC236A6 /* XCRemoteSwiftPackageReference "ZipFoundation" */;
-			productName = ZipFoundation;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F33FAD4F3C34AC9CD8203C3C /* Project object */;
 }

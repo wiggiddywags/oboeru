@@ -1,7 +1,6 @@
 import Foundation
 import SwiftData
 import SQLite3
-import ZipFoundation
 
 // AnkiImporter reads an .apkg file (ZIP containing an SQLite collection) and
 // creates matching Oboeru decks + cards, preserving scheduling state where possible.
@@ -39,7 +38,7 @@ final class AnkiImporter {
 
         do {
             try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-            try FileManager.default.unzipItem(at: url, to: tempDir)
+            try unzip(source: url, to: tempDir)
         } catch {
             return AnkiImportResult(decksCreated: 0, cardsCreated: 0, cardsSkipped: 0,
                                     errors: ["Could not unzip file: \(error.localizedDescription)"])
@@ -382,6 +381,30 @@ final class AnkiImporter {
             .replacingOccurrences(of: "&nbsp;", with: " ")
             .replacingOccurrences(of: "&quot;", with: "\"")
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    // MARK: - ZIP extraction (no external dependencies — uses system /usr/bin/unzip)
+
+    private func unzip(source: URL, to destination: URL) throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
+        process.arguments = ["-q", "-o", source.path, "-d", destination.path]
+
+        let errorPipe = Pipe()
+        process.standardError = errorPipe
+        process.standardOutput = Pipe()   // suppress stdout
+
+        try process.run()
+        process.waitUntilExit()
+
+        guard process.terminationStatus == 0 else {
+            let errData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+            let errMsg = String(data: errData, encoding: .utf8) ?? "unknown error"
+            throw NSError(
+                domain: "AnkiImporter", code: Int(process.terminationStatus),
+                userInfo: [NSLocalizedDescriptionKey: "unzip failed: \(errMsg)"]
+            )
+        }
     }
 
     // MARK: - SQLite helper
