@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct CardEditorSheet: View {
 
@@ -18,10 +19,7 @@ struct CardEditorSheet: View {
                 Text(vm.isEditing ? "Edit Card" : "New Card")
                     .font(.title2)
                     .fontWeight(.semibold)
-
                 Spacer()
-
-                // Card type picker (only when creating new)
                 if !vm.isEditing {
                     Picker("Type", selection: $vm.cardType) {
                         ForEach(CardType.allCases, id: \.self) { type in
@@ -37,25 +35,32 @@ struct CardEditorSheet: View {
 
             Divider()
 
-            // Editor body
             ScrollView {
-                switch vm.cardType {
-                case .basic:
-                    BasicCardEditorBody(front: $vm.frontText, back: $vm.backText)
-                case .cloze:
-                    ClozeCardEditorBody(
-                        clozeText: $vm.clozeText,
-                        isValid: vm.clozeIsValid,
-                        siblingCount: vm.clozeSiblingCount
-                    )
-                    .onChange(of: vm.clozeText) { vm.updateClozePreview() }
+                VStack(spacing: 20) {
+                    switch vm.cardType {
+                    case .basic:
+                        BasicCardEditorBody(
+                            front: $vm.frontText,
+                            back: $vm.backText,
+                            frontImageData: $vm.frontImageData,
+                            backImageData: $vm.backImageData
+                        )
+                    case .cloze:
+                        ClozeCardEditorBody(
+                            clozeText: $vm.clozeText,
+                            isValid: vm.clozeIsValid,
+                            siblingCount: vm.clozeSiblingCount,
+                            frontImageData: $vm.frontImageData,
+                            backImageData: $vm.backImageData
+                        )
+                        .onChange(of: vm.clozeText) { vm.updateClozePreview() }
+                    }
                 }
+                .padding(24)
             }
-            .padding(24)
 
             Divider()
 
-            // Footer buttons
             HStack {
                 Button("Cancel") { onDismiss() }
                     .keyboardShortcut(.escape, modifiers: [])
@@ -70,7 +75,7 @@ struct CardEditorSheet: View {
             }
             .padding(16)
         }
-        .frame(width: 560, height: 420)
+        .frame(width: 600, height: 520)
     }
 }
 
@@ -80,33 +85,35 @@ private struct BasicCardEditorBody: View {
 
     @Binding var front: String
     @Binding var back: String
+    @Binding var frontImageData: Data?
+    @Binding var backImageData: Data?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            editorField(label: "Front", placeholder: "Question or term…", text: $front)
-            editorField(label: "Back", placeholder: "Answer or definition…", text: $back)
+            editorSection(label: "Front", placeholder: "Question or term…", text: $front, imageData: $frontImageData)
+            editorSection(label: "Back",  placeholder: "Answer or definition…", text: $back,  imageData: $backImageData)
         }
     }
 
-    private func editorField(label: String, placeholder: String, text: Binding<String>) -> some View {
+    private func editorSection(label: String, placeholder: String, text: Binding<String>, imageData: Binding<Data?>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
+
             TextEditor(text: text)
                 .font(.body)
-                .frame(minHeight: 80)
+                .frame(minHeight: 70)
                 .padding(8)
                 .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(alignment: .topLeading) {
                     if text.wrappedValue.isEmpty {
-                        Text(placeholder)
-                            .foregroundStyle(.tertiary)
-                            .padding(12)
-                            .allowsHitTesting(false)
+                        Text(placeholder).foregroundStyle(.tertiary).padding(12).allowsHitTesting(false)
                     }
                 }
+
+            CardImagePicker(imageData: imageData)
         }
     }
 }
@@ -118,49 +125,148 @@ private struct ClozeCardEditorBody: View {
     @Binding var clozeText: String
     let isValid: Bool
     let siblingCount: Int
+    @Binding var frontImageData: Data?
+    @Binding var backImageData: Data?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Cloze Text")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
-
+                    .font(.caption).foregroundStyle(.secondary).textCase(.uppercase)
                 Text("Use {{answer}} or {{answer::hint}} to mark gaps.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(.secondary)
             }
 
             TextEditor(text: $clozeText)
                 .font(.body)
-                .frame(minHeight: 120)
+                .frame(minHeight: 100)
                 .padding(8)
                 .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(alignment: .topLeading) {
                     if clozeText.isEmpty {
                         Text("e.g. The {{capital::city}} of France is {{Paris}}.")
-                            .foregroundStyle(.tertiary)
-                            .padding(12)
-                            .allowsHitTesting(false)
+                            .foregroundStyle(.tertiary).padding(12).allowsHitTesting(false)
                     }
                 }
 
-            // Validation feedback
             if !clozeText.isEmpty {
                 if isValid {
-                    Label(
-                        "\(siblingCount) card\(siblingCount == 1 ? "" : "s") will be created",
-                        systemImage: "checkmark.circle.fill"
-                    )
-                    .font(.caption)
-                    .foregroundStyle(.green)
+                    Label("\(siblingCount) card\(siblingCount == 1 ? "" : "s") will be created", systemImage: "checkmark.circle.fill")
+                        .font(.caption).foregroundStyle(.green)
                 } else {
                     Label("Add at least one {{gap}} marker", systemImage: "exclamationmark.circle")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
+                        .font(.caption).foregroundStyle(.orange)
+                }
+            }
+
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Image (front)").font(.caption).foregroundStyle(.secondary)
+                    CardImagePicker(imageData: $frontImageData)
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Image (back)").font(.caption).foregroundStyle(.secondary)
+                    CardImagePicker(imageData: $backImageData)
                 }
             }
         }
+    }
+}
+
+// MARK: - Image picker component
+
+struct CardImagePicker: View {
+
+    @Binding var imageData: Data?
+    @State private var isTargeted = false
+    @State private var showFilePicker = false
+
+    var body: some View {
+        Group {
+            if let data = imageData, let nsImage = NSImage(data: data) {
+                // Preview with remove button
+                ZStack(alignment: .topTrailing) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 120)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                    Button {
+                        imageData = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.white, .black.opacity(0.6))
+                            .font(.title3)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(4)
+                }
+            } else {
+                // Drop zone
+                VStack(spacing: 6) {
+                    Image(systemName: "photo.badge.plus")
+                        .font(.title2)
+                        .foregroundStyle(isTargeted ? .accentColor : .secondary)
+                    Text("Drop image or")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Button("Select…") { showFilePicker = true }
+                        .font(.caption)
+                        .buttonStyle(.borderless)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 80)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(
+                            isTargeted ? Color.accentColor : Color.secondary.opacity(0.3),
+                            style: StrokeStyle(lineWidth: 1.5, dash: [5])
+                        )
+                )
+                .background(isTargeted ? Color.accentColor.opacity(0.05) : Color.clear, in: RoundedRectangle(cornerRadius: 8))
+            }
+        }
+        .onDrop(of: [.image, .fileURL], isTargeted: $isTargeted) { providers in
+            handleDrop(providers)
+        }
+        .fileImporter(
+            isPresented: $showFilePicker,
+            allowedContentTypes: [.image],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                let accessing = url.startAccessingSecurityScopedResource()
+                defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+                imageData = try? Data(contentsOf: url)
+            }
+        }
+    }
+
+    private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+
+        if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
+            provider.loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) { data, _ in
+                if let data { DispatchQueue.main.async { imageData = data } }
+            }
+            return true
+        }
+
+        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) { item, _ in
+                guard let data = item as? Data,
+                      let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+                let accessing = url.startAccessingSecurityScopedResource()
+                defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+                if let imgData = try? Data(contentsOf: url) {
+                    DispatchQueue.main.async { imageData = imgData }
+                }
+            }
+            return true
+        }
+
+        return false
     }
 }

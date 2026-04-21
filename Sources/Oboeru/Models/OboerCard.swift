@@ -34,6 +34,10 @@ final class OboerCard {
     var frontText: String
     var backText: String
 
+    // Images — stored externally by SwiftData to keep the main DB small
+    @Attribute(.externalStorage) var frontImageData: Data?
+    @Attribute(.externalStorage) var backImageData: Data?
+
     // Cloze card content
     // Full source text with {{gap::hint?}} markers.
     // Each unique ordinal (1..N) produces a separate sibling OboerCard.

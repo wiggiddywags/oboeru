@@ -7,10 +7,19 @@ struct CardFrontView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Card content
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     cardTypeTag
+
+                    // Front image (if present)
+                    if let data = card.frontImageData, let nsImage = NSImage(data: data) {
+                        Image(nsImage: nsImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxHeight: 280)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .padding(.horizontal, 32)
+                    }
 
                     Text(card.displayFront)
                         .font(.title2)
@@ -24,7 +33,6 @@ struct CardFrontView: View {
 
             Divider()
 
-            // Show Answer button
             Button(action: onShowAnswer) {
                 Text("Show Answer")
                     .font(.headline)

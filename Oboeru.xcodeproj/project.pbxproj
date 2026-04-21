@@ -13,6 +13,7 @@
 		2644A9371FBB9B151088449A /* DeckEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 053A2306027B2D2048EC78FE /* DeckEditorSheet.swift */; };
 		2B0467D1C829A80E7E6DA370 /* StatsDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F087708EAA7512781A4CCB9F /* StatsDashboardView.swift */; };
 		2F7A44DFFCE978DE34CD2776 /* OboerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962134B67BBDA8C9CFBDB0B6 /* OboerApp.swift */; };
+		33EAB53A551A812E2144323F /* CSVImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10784953062009AAEB01F3B8 /* CSVImporter.swift */; };
 		3E33CF11BEF1F00DF6F612EB /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7DFC4728ED06C9A2157FB8 /* StatsService.swift */; };
 		46AC47821C8D5A9BFF0B7822 /* OboerRating.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC609301C53043B58E9B1133 /* OboerRating.swift */; };
 		552B75D51C876A0E3E92079E /* CardBackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E279A64BD94A52F4CA4686 /* CardBackView.swift */; };
@@ -20,6 +21,7 @@
 		6C74E2C110B436820ED27510 /* StatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCED56317B410EC2578B60D /* StatsViewModel.swift */; };
 		76648CE4611E702A2DED5D61 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C8DF54C4DEA6C407234EC30 /* ContentView.swift */; };
 		76F329F8D97BF80723C2D787 /* CardEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F04856A5AAA6A73CC25629 /* CardEditorViewModel.swift */; };
+		7946A9ACE654069CD862B167 /* AnkiImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A650EF55AB6534EDDB62A451 /* AnkiImporter.swift */; };
 		8B6A309CE6D6AB983AD1221D /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB45DB08535D9A24347DC81 /* AppSettings.swift */; };
 		8EDA23ECFD03ED3FA30ADA13 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43377532EE542A5020E6E27C /* SidebarView.swift */; };
 		A2097B4F9ED1BA88729F1C51 /* CardListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9036A7AF3D5C4989C1BF525D /* CardListView.swift */; };
@@ -29,9 +31,11 @@
 		B7E60376ADFD4303FD52B6A6 /* FSRSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D76549EABF3EB7E0B3F64B /* FSRSService.swift */; };
 		BFD40DC46996FFD08617E7EE /* CardEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 624483CAFFD6C90AF3C6AAA3 /* CardEditorSheet.swift */; };
 		C36DE889F1A0A4BCF948B48D /* RatingBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D85E9B685EDE08E1B8A05 /* RatingBarView.swift */; };
+		CC31004FBCC4F901AAA58F7C /* ZipFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = F0F6E64DE3F96294741608B7 /* ZipFoundation */; };
 		CEEB090C32465F591A4054AC /* Deck.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2BD46C3C836C4B541448317 /* Deck.swift */; };
 		D20ECB25B614A341C26E1FB2 /* ReviewSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABC40F9308D1EEB4BE7ABE1 /* ReviewSessionView.swift */; };
 		D392D92F0DDEBBC6F6371061 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FF46C87F75F91CC1C2878C /* ColorExtensions.swift */; };
+		EE7D0474F011793B8C6D1393 /* ImportSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEC7D69BA27D27BEB2ECA8AE /* ImportSheetView.swift */; };
 		EFC2CB0300B5015D328E8248 /* DeckListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 857DD11F3127DF492740A256 /* DeckListViewModel.swift */; };
 		FA6CF5379D3695B4E52B660E /* OboerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00472C44FD247E3DA0C27C61 /* OboerCard.swift */; };
 /* End PBXBuildFile section */
@@ -39,6 +43,7 @@
 /* Begin PBXFileReference section */
 		00472C44FD247E3DA0C27C61 /* OboerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OboerCard.swift; sourceTree = "<group>"; };
 		053A2306027B2D2048EC78FE /* DeckEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeckEditorSheet.swift; sourceTree = "<group>"; };
+		10784953062009AAEB01F3B8 /* CSVImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImporter.swift; sourceTree = "<group>"; };
 		1CB45DB08535D9A24347DC81 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		25E279A64BD94A52F4CA4686 /* CardBackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardBackView.swift; sourceTree = "<group>"; };
 		30D76549EABF3EB7E0B3F64B /* FSRSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSRSService.swift; sourceTree = "<group>"; };
@@ -55,6 +60,7 @@
 		962134B67BBDA8C9CFBDB0B6 /* OboerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OboerApp.swift; sourceTree = "<group>"; };
 		9C8DF54C4DEA6C407234EC30 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A53939F3E61ABF6070D9969B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A650EF55AB6534EDDB62A451 /* AnkiImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiImporter.swift; sourceTree = "<group>"; };
 		B04DCF57F10F5CF72D23CEF2 /* Oboeru.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Oboeru.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BABC40F9308D1EEB4BE7ABE1 /* ReviewSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionView.swift; sourceTree = "<group>"; };
 		D71D85E9B685EDE08E1B8A05 /* RatingBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingBarView.swift; sourceTree = "<group>"; };
@@ -65,7 +71,19 @@
 		F2BD46C3C836C4B541448317 /* Deck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deck.swift; sourceTree = "<group>"; };
 		FE1289F5EECDCD7072BEE128 /* ClozeParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeParser.swift; sourceTree = "<group>"; };
 		FE7DFC4728ED06C9A2157FB8 /* StatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsService.swift; sourceTree = "<group>"; };
+		FEC7D69BA27D27BEB2ECA8AE /* ImportSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSheetView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C97984B475B08FF944F6DA2B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC31004FBCC4F901AAA58F7C /* ZipFoundation in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0F6CA514E120ADF80E520DF3 /* Settings */ = {
@@ -89,6 +107,7 @@
 			children = (
 				624483CAFFD6C90AF3C6AAA3 /* CardEditorSheet.swift */,
 				9036A7AF3D5C4989C1BF525D /* CardListView.swift */,
+				FEC7D69BA27D27BEB2ECA8AE /* ImportSheetView.swift */,
 			);
 			path = Cards;
 			sourceTree = "<group>";
@@ -178,7 +197,9 @@
 		D8CF29642211B75D95C48DAF /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A650EF55AB6534EDDB62A451 /* AnkiImporter.swift */,
 				FE1289F5EECDCD7072BEE128 /* ClozeParser.swift */,
+				10784953062009AAEB01F3B8 /* CSVImporter.swift */,
 				30D76549EABF3EB7E0B3F64B /* FSRSService.swift */,
 				FE7DFC4728ED06C9A2157FB8 /* StatsService.swift */,
 				55A9379D65F9814C84D3BD79 /* StudySession.swift */,
@@ -230,6 +251,7 @@
 			buildConfigurationList = 0F0373CEFD891A84C564EF06 /* Build configuration list for PBXNativeTarget "Oboeru" */;
 			buildPhases = (
 				28280DC058FAA4C484B870C6 /* Sources */,
+				C97984B475B08FF944F6DA2B /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -237,6 +259,7 @@
 			);
 			name = Oboeru;
 			packageProductDependencies = (
+				F0F6E64DE3F96294741608B7 /* ZipFoundation */,
 			);
 			productName = Oboeru;
 			productReference = B04DCF57F10F5CF72D23CEF2 /* Oboeru.app */;
@@ -266,6 +289,9 @@
 			);
 			mainGroup = 745D28C9B6C63F98BE93783C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4C97F5B89AD3D5EA3FC236A6 /* XCRemoteSwiftPackageReference "ZipFoundation" */,
+			);
 			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
@@ -280,8 +306,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7946A9ACE654069CD862B167 /* AnkiImporter.swift in Sources */,
 				B58A993039B30CD576F584C7 /* AppCommands.swift in Sources */,
 				8B6A309CE6D6AB983AD1221D /* AppSettings.swift in Sources */,
+				33EAB53A551A812E2144323F /* CSVImporter.swift in Sources */,
 				552B75D51C876A0E3E92079E /* CardBackView.swift in Sources */,
 				BFD40DC46996FFD08617E7EE /* CardEditorSheet.swift in Sources */,
 				76F329F8D97BF80723C2D787 /* CardEditorViewModel.swift in Sources */,
@@ -295,6 +323,7 @@
 				2644A9371FBB9B151088449A /* DeckEditorSheet.swift in Sources */,
 				EFC2CB0300B5015D328E8248 /* DeckListViewModel.swift in Sources */,
 				B7E60376ADFD4303FD52B6A6 /* FSRSService.swift in Sources */,
+				EE7D0474F011793B8C6D1393 /* ImportSheetView.swift in Sources */,
 				2F7A44DFFCE978DE34CD2776 /* OboerApp.swift in Sources */,
 				FA6CF5379D3695B4E52B660E /* OboerCard.swift in Sources */,
 				46AC47821C8D5A9BFF0B7822 /* OboerRating.swift in Sources */,
@@ -496,6 +525,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4C97F5B89AD3D5EA3FC236A6 /* XCRemoteSwiftPackageReference "ZipFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZipFoundation.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.19;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F0F6E64DE3F96294741608B7 /* ZipFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4C97F5B89AD3D5EA3FC236A6 /* XCRemoteSwiftPackageReference "ZipFoundation" */;
+			productName = ZipFoundation;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F33FAD4F3C34AC9CD8203C3C /* Project object */;
 }

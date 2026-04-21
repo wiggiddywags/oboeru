@@ -10,6 +10,8 @@ final class CardEditorViewModel {
     var clozeText: String = ""
     var clozeIsValid: Bool = false
     var clozeSiblingCount: Int = 0
+    var frontImageData: Data? = nil
+    var backImageData: Data? = nil
 
     private let existingCard: OboerCard?
     private let deck: Deck
@@ -23,10 +25,12 @@ final class CardEditorViewModel {
         self.modelContext = modelContext
 
         if let card {
-            self.cardType  = card.cardType
-            self.frontText = card.frontText
-            self.backText  = card.backText
-            self.clozeText = card.clozeText ?? ""
+            self.cardType       = card.cardType
+            self.frontText      = card.frontText
+            self.backText       = card.backText
+            self.clozeText      = card.clozeText ?? ""
+            self.frontImageData = card.frontImageData
+            self.backImageData  = card.backImageData
         }
     }
 
@@ -60,9 +64,11 @@ final class CardEditorViewModel {
 
     private func saveBasic() throws {
         if let card = existingCard {
-            card.frontText = frontText.trimmingCharacters(in: .whitespacesAndNewlines)
-            card.backText  = backText.trimmingCharacters(in: .whitespacesAndNewlines)
-            card.updatedAt = Date()
+            card.frontText      = frontText.trimmingCharacters(in: .whitespacesAndNewlines)
+            card.backText       = backText.trimmingCharacters(in: .whitespacesAndNewlines)
+            card.frontImageData = frontImageData
+            card.backImageData  = backImageData
+            card.updatedAt      = Date()
         } else {
             let card = OboerCard(
                 deck: deck,
@@ -70,6 +76,8 @@ final class CardEditorViewModel {
                 frontText: frontText.trimmingCharacters(in: .whitespacesAndNewlines),
                 backText: backText.trimmingCharacters(in: .whitespacesAndNewlines)
             )
+            card.frontImageData = frontImageData
+            card.backImageData  = backImageData
             modelContext.insert(card)
         }
         try modelContext.save()

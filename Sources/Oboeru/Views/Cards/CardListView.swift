@@ -4,6 +4,7 @@ import SwiftData
 struct CardListView: View {
 
     @State private var vm: DeckDetailViewModel
+    @State private var isShowingImportSheet = false
     @Environment(\.modelContext) private var modelContext
 
     init(deck: Deck, modelContext: ModelContext) {
@@ -26,6 +27,18 @@ struct CardListView: View {
                 modelContext: modelContext,
                 onDismiss: {
                     vm.isShowingCardEditor = false
+                    vm.load()
+                }
+            )
+        }
+        .sheet(isPresented: $isShowingImportSheet) {
+            vm.load()
+        } content: {
+            ImportSheetView(
+                deck: vm.deck,
+                modelContext: modelContext,
+                onDismiss: {
+                    isShowingImportSheet = false
                     vm.load()
                 }
             )
@@ -60,6 +73,14 @@ struct CardListView: View {
             .frame(width: 240)
 
             Spacer()
+
+            // Import button
+            Button {
+                isShowingImportSheet = true
+            } label: {
+                Label("Import", systemImage: "square.and.arrow.down")
+            }
+            .buttonStyle(.bordered)
 
             // Add card button
             Button {
