@@ -10,8 +10,22 @@ final class CardEditorViewModel {
     var clozeText: String = ""
     var clozeIsValid: Bool = false
     var clozeSiblingCount: Int = 0
+
+    // Images / GIFs
     var frontImageData: Data? = nil
     var backImageData: Data? = nil
+
+    // Audio
+    var frontAudioData: Data? = nil
+    var frontAudioExt: String? = nil
+    var backAudioData: Data? = nil
+    var backAudioExt: String? = nil
+
+    // Video
+    var frontVideoData: Data? = nil
+    var frontVideoExt: String? = nil
+    var backVideoData: Data? = nil
+    var backVideoExt: String? = nil
 
     private let existingCard: OboerCard?
     private let deck: Deck
@@ -31,6 +45,14 @@ final class CardEditorViewModel {
             self.clozeText      = card.clozeText ?? ""
             self.frontImageData = card.frontImageData
             self.backImageData  = card.backImageData
+            self.frontAudioData = card.frontAudioData
+            self.frontAudioExt  = card.frontAudioExt
+            self.backAudioData  = card.backAudioData
+            self.backAudioExt   = card.backAudioExt
+            self.frontVideoData = card.frontVideoData
+            self.frontVideoExt  = card.frontVideoExt
+            self.backVideoData  = card.backVideoData
+            self.backVideoExt   = card.backVideoExt
         }
     }
 
@@ -55,20 +77,30 @@ final class CardEditorViewModel {
 
     func save() throws {
         switch cardType {
-        case .basic:
-            try saveBasic()
-        case .cloze:
-            try saveCloze()
+        case .basic:  try saveBasic()
+        case .cloze:  try saveCloze()
         }
+    }
+
+    private func applyMedia(to card: OboerCard) {
+        card.frontImageData = frontImageData
+        card.backImageData  = backImageData
+        card.frontAudioData = frontAudioData
+        card.frontAudioExt  = frontAudioExt
+        card.backAudioData  = backAudioData
+        card.backAudioExt   = backAudioExt
+        card.frontVideoData = frontVideoData
+        card.frontVideoExt  = frontVideoExt
+        card.backVideoData  = backVideoData
+        card.backVideoExt   = backVideoExt
     }
 
     private func saveBasic() throws {
         if let card = existingCard {
-            card.frontText      = frontText.trimmingCharacters(in: .whitespacesAndNewlines)
-            card.backText       = backText.trimmingCharacters(in: .whitespacesAndNewlines)
-            card.frontImageData = frontImageData
-            card.backImageData  = backImageData
-            card.updatedAt      = Date()
+            card.frontText = frontText.trimmingCharacters(in: .whitespacesAndNewlines)
+            card.backText  = backText.trimmingCharacters(in: .whitespacesAndNewlines)
+            card.updatedAt = Date()
+            applyMedia(to: card)
         } else {
             let card = OboerCard(
                 deck: deck,
@@ -76,8 +108,7 @@ final class CardEditorViewModel {
                 frontText: frontText.trimmingCharacters(in: .whitespacesAndNewlines),
                 backText: backText.trimmingCharacters(in: .whitespacesAndNewlines)
             )
-            card.frontImageData = frontImageData
-            card.backImageData  = backImageData
+            applyMedia(to: card)
             modelContext.insert(card)
         }
         try modelContext.save()
@@ -88,50 +119,42 @@ final class CardEditorViewModel {
         let newSiblings = ClozeParser.siblings(for: raw)
 
         if let existingCard {
-            // We're editing the "primary" sibling (ordinal == 1 in the simplest case).
-            // Find all sibling cards that share the same clozeText source in this deck.
             let existingOrdinal = existingCard.clozeOrdinal
             let deckCards = deck.cards.filter {
                 $0.cardType == .cloze && $0.clozeText == (existingCard.clozeText ?? "")
             }
 
-            // Update or delete existing siblings
             for sibling in deckCards {
                 if let match = newSiblings.first(where: { $0.ordinal == sibling.clozeOrdinal }) {
                     sibling.clozeText = raw
                     sibling.frontText = match.maskedText
                     sibling.backText  = match.fullText
                     sibling.updatedAt = Date()
+                    applyMedia(to: sibling)
                 } else {
                     modelContext.delete(sibling)
                 }
             }
 
-            // Insert new siblings that didn't exist before
             let existingOrdinals = Set(deckCards.map(\.clozeOrdinal))
             for sibling in newSiblings where !existingOrdinals.contains(sibling.ordinal) {
                 let card = OboerCard(
-                    deck: deck,
-                    cardType: .cloze,
-                    frontText: sibling.maskedText,
-                    backText: sibling.fullText,
-                    clozeText: raw,
-                    clozeOrdinal: sibling.ordinal
+                    deck: deck, cardType: .cloze,
+                    frontText: sibling.maskedText, backText: sibling.fullText,
+                    clozeText: raw, clozeOrdinal: sibling.ordinal
                 )
+                applyMedia(to: card)
                 modelContext.insert(card)
             }
-            _ = existingOrdinal  // suppress unused warning
+            _ = existingOrdinal
         } else {
-            // New cloze card — insert all siblings
             for sibling in newSiblings {
                 let card = OboerCard(
-                    deck: deck,
-                    cardType: .cloze,
-                    frontText: sibling.maskedText,
-                    backText: sibling.fullText,
-                    clozeText: raw,
-                    clozeOrdinal: sibling.ordinal
+                    deck: deck, cardType: .cloze,
+                    frontText: sibling.maskedText, backText: sibling.fullText,
+                    clozeText: raw, clozeOrdinal: sibling.ordinal
                 )
+                applyMedia(to: card)
                 modelContext.insert(card)
             }
         }

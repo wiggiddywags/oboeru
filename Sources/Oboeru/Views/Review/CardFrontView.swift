@@ -11,13 +11,12 @@ struct CardFrontView: View {
                 VStack(spacing: 20) {
                     cardTypeTag
 
-                    // Front image (if present)
-                    if let data = card.frontImageData, let nsImage = NSImage(data: data) {
-                        Image(nsImage: nsImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: 280)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    // Video (takes priority over image if both present)
+                    if let data = card.frontVideoData {
+                        CardVideoPlayerView(data: data, fileExtension: card.frontVideoExt ?? "mp4")
+                            .padding(.horizontal, 32)
+                    } else if let data = card.frontImageData {
+                        SmartImageView(data: data, maxHeight: 280)
                             .padding(.horizontal, 32)
                     }
 
@@ -26,6 +25,12 @@ struct CardFrontView: View {
                         .multilineTextAlignment(.center)
                         .textSelection(.enabled)
                         .padding(.horizontal, 32)
+
+                    // Audio player
+                    if let data = card.frontAudioData {
+                        CardAudioPlayerView(data: data)
+                            .padding(.horizontal, 32)
+                    }
                 }
                 .padding(.vertical, 40)
                 .frame(maxWidth: .infinity)

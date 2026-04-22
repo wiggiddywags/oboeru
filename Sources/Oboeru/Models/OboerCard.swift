@@ -34,9 +34,21 @@ final class OboerCard {
     var frontText: String
     var backText: String
 
-    // Images — stored externally by SwiftData to keep the main DB small
+    // Images & GIFs — stored externally by SwiftData to keep the main DB small
     @Attribute(.externalStorage) var frontImageData: Data?
     @Attribute(.externalStorage) var backImageData: Data?
+
+    // Audio attachments (mp3, m4a, wav, aiff, aac…)
+    @Attribute(.externalStorage) var frontAudioData: Data?
+    @Attribute(.externalStorage) var backAudioData: Data?
+    var frontAudioExt: String?       // file extension, e.g. "mp3"
+    var backAudioExt: String?
+
+    // Video attachments (mp4, mov, m4v…)
+    @Attribute(.externalStorage) var frontVideoData: Data?
+    @Attribute(.externalStorage) var backVideoData: Data?
+    var frontVideoExt: String?       // file extension, e.g. "mp4"
+    var backVideoExt: String?
 
     // Cloze card content
     // Full source text with {{gap::hint?}} markers.
