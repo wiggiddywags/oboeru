@@ -208,7 +208,7 @@ struct CardImagePicker: View {
                 VStack(spacing: 6) {
                     Image(systemName: "photo.badge.plus")
                         .font(.title2)
-                        .foregroundStyle(isTargeted ? .accentColor : .secondary)
+                        .foregroundStyle(isTargeted ? Color.accentColor : Color.secondary)
                     Text("Drop image or")
                         .font(.caption)
                         .foregroundStyle(.secondary)
