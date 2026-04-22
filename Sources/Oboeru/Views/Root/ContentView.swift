@@ -40,8 +40,13 @@ struct ContentView: View {
         showStats = false
     }
 
+    // MARK: - Layout
+
     @ViewBuilder
     private func mainSplitView(vm: DeckListViewModel) -> some View {
+        // Two-column split: sidebar + main area.
+        // The main area switches between deck detail, review session, and stats.
+        // This hides the card list the moment study begins.
         NavigationSplitView {
             SidebarView(
                 vm: vm,
@@ -49,40 +54,41 @@ struct ContentView: View {
                 onStats: { showStats = true; activeSession = nil }
             )
             .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
-        } content: {
-            if let deck = vm.selectedDeck {
-                CardListView(deck: deck, modelContext: modelContext)
-            } else {
-                ContentUnavailableView(
-                    "Select a Deck",
-                    systemImage: "rectangle.stack",
-                    description: Text("Choose a deck from the sidebar to browse its cards.")
-                )
-            }
         } detail: {
-            if let session = activeSession {
-                ReviewSessionView(session: session) {
-                    activeSession = nil
-                    vm.refreshDueCounts()
-                }
-            } else if showStats {
-                StatsDashboardView()
-            } else {
-                welcomeDetail
-            }
+            mainDetailView(vm: vm)
         }
         .navigationSplitViewStyle(.balanced)
     }
 
-    private var welcomeDetail: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "brain.head.profile")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
-            Text("Ready to study?")
+    @ViewBuilder
+    private func mainDetailView(vm: DeckListViewModel) -> some View {
+        if let session = activeSession {
+            ReviewSessionView(session: session) {
+                activeSession = nil
+                vm.refreshDueCounts()
+            }
+        } else if showStats {
+            StatsDashboardView()
+        } else if let deck = vm.selectedDeck {
+            CardListView(
+                deck: deck,
+                modelContext: modelContext,
+                onStudy: { startStudy(deckID: deck.id) }
+            )
+        } else {
+            emptyState
+        }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "rectangle.stack")
+                .font(.system(size: 52))
+                .foregroundStyle(.tertiary)
+            Text("Select a Deck")
                 .font(.title2)
                 .foregroundStyle(.secondary)
-            Text("Select a deck and tap Study, or use Study All.")
+            Text("Choose a deck from the sidebar to browse cards,\nor create a new deck with the + button.")
                 .font(.body)
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)

@@ -8,7 +8,6 @@ struct SidebarView: View {
 
     var body: some View {
         List(selection: $vm.selectedDeckID) {
-            // Study All row
             studyAllRow
 
             Section("Decks") {
@@ -17,7 +16,8 @@ struct SidebarView: View {
                         deck: deck,
                         dueCount: vm.dueCounts[deck.id] ?? 0,
                         onStudy: { onStudy(deck.id) },
-                        onDelete: { vm.deleteDeck(deck) },
+                        onEdit:  { vm.editingDeck = deck; vm.isShowingNewDeckSheet = true },
+                        onDelete:  { vm.deleteDeck(deck) },
                         onArchive: { vm.archiveDeck(deck) }
                     )
                     .tag(deck.id)
@@ -34,9 +34,7 @@ struct SidebarView: View {
         .navigationTitle("Oboeru")
         .toolbar {
             ToolbarItem(placement: .automatic) {
-                Button {
-                    vm.isShowingNewDeckSheet = true
-                } label: {
+                Button { vm.isShowingNewDeckSheet = true } label: {
                     Image(systemName: "plus")
                 }
                 .help("New Deck (⇧⌘N)")
@@ -45,20 +43,30 @@ struct SidebarView: View {
         .sheet(isPresented: $vm.isShowingNewDeckSheet) {
             vm.load()
         } content: {
-            DeckEditorSheet(onSave: { name, color, icon in
-                vm.createDeck(name: name, colorHex: color, iconName: icon)
-                vm.isShowingNewDeckSheet = false
-            }, onCancel: {
-                vm.isShowingNewDeckSheet = false
-            })
+            DeckEditorSheet(
+                existingDeck: vm.editingDeck,
+                onSave: { name, color, icon in
+                    if let existing = vm.editingDeck {
+                        vm.updateDeck(existing, name: name, colorHex: color, iconName: icon)
+                    } else {
+                        vm.createDeck(name: name, colorHex: color, iconName: icon)
+                    }
+                    vm.editingDeck           = nil
+                    vm.isShowingNewDeckSheet = false
+                },
+                onCancel: {
+                    vm.editingDeck         = nil
+                    vm.isShowingNewDeckSheet = false
+                }
+            )
         }
         .onAppear { vm.load() }
-        .onReceive(
-            NotificationCenter.default.publisher(for: .newDeckRequested)
-        ) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .newDeckRequested)) { _ in
             vm.isShowingNewDeckSheet = true
         }
     }
+
+    // MARK: - Study All row
 
     private var studyAllRow: some View {
         let dueAll = vm.dueCounts[UUID.zero] ?? 0
@@ -80,19 +88,22 @@ struct SidebarView: View {
     }
 }
 
+// MARK: - Deck row
+
 private struct DeckRowView: View {
 
     let deck: Deck
     let dueCount: Int
     let onStudy: () -> Void
+    let onEdit: () -> Void
     let onDelete: () -> Void
     let onArchive: () -> Void
 
     var body: some View {
-        HStack {
+        HStack(spacing: 8) {
             Image(systemName: deck.iconName)
                 .foregroundStyle(Color(hex: deck.colorHex) ?? .accentColor)
-                .frame(width: 20)
+                .frame(width: 18)
 
             Text(deck.name)
                 .lineLimit(1)
@@ -110,9 +121,10 @@ private struct DeckRowView: View {
         }
         .contextMenu {
             Button("Study Now", action: onStudy)
+            Button("Edit Deck",  action: onEdit)
             Divider()
-            Button("Archive Deck", action: onArchive)
-            Button("Delete Deck", role: .destructive, action: onDelete)
+            Button("Archive",  action: onArchive)
+            Button("Delete", role: .destructive, action: onDelete)
         }
     }
 }

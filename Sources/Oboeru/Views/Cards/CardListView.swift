@@ -7,20 +7,22 @@ struct CardListView: View {
     @State private var isShowingImportSheet = false
     @Environment(\.modelContext) private var modelContext
 
-    init(deck: Deck, modelContext: ModelContext) {
+    let onStudy: () -> Void
+
+    init(deck: Deck, modelContext: ModelContext, onStudy: @escaping () -> Void) {
         _vm = State(initialValue: DeckDetailViewModel(deck: deck, modelContext: modelContext))
+        self.onStudy = onStudy
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            toolbar
+            deckHeader
+            Divider()
+            cardToolbar
             Divider()
             cardList
         }
-        .navigationTitle(vm.deck.name)
-        .sheet(isPresented: $vm.isShowingCardEditor) {
-            vm.load()
-        } content: {
+        .sheet(isPresented: $vm.isShowingCardEditor) { vm.load() } content: {
             CardEditorSheet(
                 existingCard: vm.editingCard,
                 deck: vm.deck,
@@ -31,9 +33,7 @@ struct CardListView: View {
                 }
             )
         }
-        .sheet(isPresented: $isShowingImportSheet) {
-            vm.load()
-        } content: {
+        .sheet(isPresented: $isShowingImportSheet) { vm.load() } content: {
             ImportSheetView(
                 deck: vm.deck,
                 modelContext: modelContext,
@@ -49,40 +49,109 @@ struct CardListView: View {
         }
     }
 
-    private var toolbar: some View {
+    // MARK: - Deck header
+
+    private var deckHeader: some View {
+        let color = Color(hex: vm.deck.colorHex) ?? .accentColor
+        let due   = vm.cards.filter { $0.isDue && !$0.isSuspended }.count
+        let new   = vm.cards.filter { $0.fsrsState == .new }.count
+
+        return HStack(spacing: 16) {
+
+            // Icon
+            Image(systemName: vm.deck.iconName)
+                .font(.system(size: 22, weight: .medium))
+                .foregroundStyle(color)
+                .frame(width: 48, height: 48)
+                .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+
+            // Name + stats
+            VStack(alignment: .leading, spacing: 5) {
+                Text(vm.deck.name)
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .lineLimit(1)
+
+                HStack(spacing: 10) {
+                    statPill("\(vm.cards.count) cards", color: .secondary)
+                    if due > 0 {
+                        statPill("\(due) due", color: .green)
+                    }
+                    if new > 0 {
+                        statPill("\(new) new", color: .blue)
+                    }
+                }
+            }
+
+            Spacer()
+
+            // Study button
+            Button(action: onStudy) {
+                Label(
+                    due > 0 ? "Study  \(due)" : "Study",
+                    systemImage: "play.fill"
+                )
+                .padding(.horizontal, 4)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(color)
+            .disabled(vm.cards.isEmpty)
+            .help("Start a review session for this deck")
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(color.opacity(0.05))
+    }
+
+    private func statPill(_ label: String, color: Color) -> some View {
+        Text(label)
+            .font(.caption)
+            .foregroundStyle(color)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.1), in: Capsule())
+    }
+
+    // MARK: - Card toolbar (search, filter, actions)
+
+    private var cardToolbar: some View {
         HStack(spacing: 8) {
             // Search
-            HStack {
+            HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
+                    .font(.callout)
                 TextField("Search cards…", text: $vm.searchText)
                     .textFieldStyle(.plain)
             }
             .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
-            .frame(maxWidth: 280)
+            .padding(.vertical, 5)
+            .background(.quaternary, in: RoundedRectangle(cornerRadius: 7))
+            .frame(maxWidth: 260)
 
             // Filter
-            Picker("Filter", selection: $vm.filterState) {
+            Picker("", selection: $vm.filterState) {
                 ForEach(DeckDetailViewModel.FilterState.allCases, id: \.self) { state in
                     Text(state.rawValue).tag(state)
                 }
             }
             .pickerStyle(.segmented)
-            .frame(width: 240)
+            .frame(width: 230)
+            .labelsHidden()
 
             Spacer()
 
-            // Import button
+            // Import
             Button {
                 isShowingImportSheet = true
             } label: {
-                Label("Import", systemImage: "square.and.arrow.down")
+                Image(systemName: "square.and.arrow.down")
             }
             .buttonStyle(.bordered)
+            .help("Import cards from CSV or Anki")
 
-            // Add card button
+            // New card
             Button {
                 vm.newCardForEditing()
             } label: {
@@ -92,8 +161,10 @@ struct CardListView: View {
             .keyboardShortcut("n", modifiers: .command)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
     }
+
+    // MARK: - Card list
 
     private var cardList: some View {
         let cards = vm.filteredCards()
@@ -102,7 +173,9 @@ struct CardListView: View {
                 ContentUnavailableView(
                     vm.searchText.isEmpty ? "No Cards" : "No Results",
                     systemImage: vm.searchText.isEmpty ? "rectangle.stack.badge.plus" : "magnifyingglass",
-                    description: Text(vm.searchText.isEmpty ? "Add your first card to get started." : "Try a different search term.")
+                    description: Text(vm.searchText.isEmpty
+                        ? "Tap "New Card" to add your first card."
+                        : "Try a different search term.")
                 )
             } else {
                 List {
@@ -136,13 +209,14 @@ struct CardListView: View {
     }
 }
 
+// MARK: - Card row
+
 private struct CardRowView: View {
 
     let card: OboerCard
 
     var body: some View {
         HStack(spacing: 12) {
-            // Type indicator
             Image(systemName: card.cardType == .cloze ? "text.word.spacing" : "rectangle.2.swap")
                 .foregroundStyle(.secondary)
                 .frame(width: 20)
@@ -162,8 +236,6 @@ private struct CardRowView: View {
             }
 
             Spacer()
-
-            // State badge
             stateBadge
         }
         .opacity(card.isSuspended ? 0.5 : 1)
@@ -173,32 +245,26 @@ private struct CardRowView: View {
     private var stateBadge: some View {
         switch card.fsrsState {
         case .new:
-            Text("New")
-                .font(.caption2)
-                .foregroundStyle(.blue)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(.blue.opacity(0.12), in: Capsule())
+            badge("New", color: .blue)
         case .learning, .relearning:
-            Text("Learning")
-                .font(.caption2)
-                .foregroundStyle(.orange)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(.orange.opacity(0.12), in: Capsule())
+            badge("Learning", color: .orange)
         case .review:
             if card.isDue {
-                Text("Due")
-                    .font(.caption2)
-                    .foregroundStyle(.green)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(.green.opacity(0.12), in: Capsule())
+                badge("Due", color: .green)
             } else {
                 Text(card.fsrsDue, style: .relative)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
         }
+    }
+
+    private func badge(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.caption2)
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.12), in: Capsule())
     }
 }

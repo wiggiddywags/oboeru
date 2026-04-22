@@ -8,6 +8,7 @@ final class DeckListViewModel {
     private(set) var dueCounts: [UUID: Int] = [:]
     var selectedDeckID: UUID?
     var isShowingNewDeckSheet = false
+    var editingDeck: Deck? = nil   // non-nil when editing an existing deck
 
     private let modelContext: ModelContext
     private let statsService: StatsService
@@ -61,6 +62,18 @@ final class DeckListViewModel {
         deck.isArchived = true
         try? modelContext.save()
         load()
+    }
+
+    func updateDeck(_ deck: Deck, name: String, colorHex: String, iconName: String) {
+        deck.name     = name
+        deck.colorHex = colorHex
+        deck.iconName = iconName
+        try? modelContext.save()
+        load()
+    }
+
+    func save() {
+        try? modelContext.save()
     }
 
     // MARK: - Start study session
