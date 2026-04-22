@@ -11,6 +11,10 @@ final class CardEditorViewModel {
     var clozeIsValid: Bool = false
     var clozeSiblingCount: Int = 0
 
+    // Rich text (RTF data — nil for plain text cards)
+    var frontRTFData: Data? = nil
+    var backRTFData: Data? = nil
+
     // Images / GIFs
     var frontImageData: Data? = nil
     var backImageData: Data? = nil
@@ -43,6 +47,8 @@ final class CardEditorViewModel {
             self.frontText      = card.frontText
             self.backText       = card.backText
             self.clozeText      = card.clozeText ?? ""
+            self.frontRTFData   = card.frontRTFData
+            self.backRTFData    = card.backRTFData
             self.frontImageData = card.frontImageData
             self.backImageData  = card.backImageData
             self.frontAudioData = card.frontAudioData
@@ -83,6 +89,8 @@ final class CardEditorViewModel {
     }
 
     private func applyMedia(to card: OboerCard) {
+        card.frontRTFData   = frontRTFData
+        card.backRTFData    = backRTFData
         card.frontImageData = frontImageData
         card.backImageData  = backImageData
         card.frontAudioData = frontAudioData

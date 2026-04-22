@@ -9,12 +9,20 @@ struct CardBackView: View {
             VStack(spacing: 24) {
 
                 // ── Front (dimmed) ──
-                Text(card.displayFront)
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .textSelection(.enabled)
-                    .padding(.horizontal, 32)
+                Group {
+                    if let rtf = card.frontRTFData {
+                        RichTextDisplayView(rtfData: rtf, centered: true)
+                            .frame(minHeight: 30)
+                            .opacity(0.5)
+                    } else {
+                        Text(card.displayFront)
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .textSelection(.enabled)
+                    }
+                }
+                .padding(.horizontal, 32)
 
                 Divider().padding(.horizontal, 64)
 
@@ -30,12 +38,18 @@ struct CardBackView: View {
                             .padding(.horizontal, 32)
                     }
 
-                    Text(card.displayBack)
-                        .font(.title2)
-                        .fontWeight(.medium)
-                        .multilineTextAlignment(.center)
-                        .textSelection(.enabled)
-                        .padding(.horizontal, 32)
+                    if let rtf = card.backRTFData {
+                        RichTextDisplayView(rtfData: rtf, centered: true)
+                            .frame(minHeight: 40)
+                            .padding(.horizontal, 32)
+                    } else {
+                        Text(card.displayBack)
+                            .font(.title2)
+                            .fontWeight(.medium)
+                            .multilineTextAlignment(.center)
+                            .textSelection(.enabled)
+                            .padding(.horizontal, 32)
+                    }
 
                     if let data = card.backAudioData {
                         CardAudioPlayerView(data: data)

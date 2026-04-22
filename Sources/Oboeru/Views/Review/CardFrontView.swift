@@ -20,11 +20,17 @@ struct CardFrontView: View {
                             .padding(.horizontal, 32)
                     }
 
-                    Text(card.displayFront)
-                        .font(.title2)
-                        .multilineTextAlignment(.center)
-                        .textSelection(.enabled)
-                        .padding(.horizontal, 32)
+                    if let rtf = card.frontRTFData {
+                        RichTextDisplayView(rtfData: rtf, centered: true)
+                            .frame(minHeight: 40)
+                            .padding(.horizontal, 32)
+                    } else {
+                        Text(card.displayFront)
+                            .font(.title2)
+                            .multilineTextAlignment(.center)
+                            .textSelection(.enabled)
+                            .padding(.horizontal, 32)
+                    }
 
                     // Audio player
                     if let data = card.frontAudioData {

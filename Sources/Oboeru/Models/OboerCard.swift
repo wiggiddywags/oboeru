@@ -34,6 +34,10 @@ final class OboerCard {
     var frontText: String
     var backText: String
 
+    // Rich text (RTF) — stored externally; frontText/backText remain as plain-text fallbacks
+    @Attribute(.externalStorage) var frontRTFData: Data?
+    @Attribute(.externalStorage) var backRTFData: Data?
+
     // Images & GIFs — stored externally by SwiftData to keep the main DB small
     @Attribute(.externalStorage) var frontImageData: Data?
     @Attribute(.externalStorage) var backImageData: Data?

@@ -63,7 +63,7 @@ struct CardEditorSheet: View {
             }
             .padding(16)
         }
-        .frame(width: 620, height: 600)
+        .frame(width: 640, height: 660)
     }
 }
 
@@ -77,7 +77,8 @@ private struct BasicCardEditorBody: View {
             cardSide(
                 label: "Front",
                 placeholder: "Question or term…",
-                text: $vm.frontText,
+                rtfData: $vm.frontRTFData,
+                plainText: $vm.frontText,
                 imageData: $vm.frontImageData,
                 audioData: $vm.frontAudioData, audioExt: $vm.frontAudioExt,
                 videoData: $vm.frontVideoData, videoExt: $vm.frontVideoExt
@@ -85,7 +86,8 @@ private struct BasicCardEditorBody: View {
             cardSide(
                 label: "Back",
                 placeholder: "Answer or definition…",
-                text: $vm.backText,
+                rtfData: $vm.backRTFData,
+                plainText: $vm.backText,
                 imageData: $vm.backImageData,
                 audioData: $vm.backAudioData, audioExt: $vm.backAudioExt,
                 videoData: $vm.backVideoData, videoExt: $vm.backVideoExt
@@ -96,7 +98,8 @@ private struct BasicCardEditorBody: View {
     private func cardSide(
         label: String,
         placeholder: String,
-        text: Binding<String>,
+        rtfData: Binding<Data?>,
+        plainText: Binding<String>,
         imageData: Binding<Data?>,
         audioData: Binding<Data?>, audioExt: Binding<String?>,
         videoData: Binding<Data?>, videoExt: Binding<String?>
@@ -105,16 +108,11 @@ private struct BasicCardEditorBody: View {
             Text(label)
                 .font(.caption).foregroundStyle(.secondary).textCase(.uppercase)
 
-            TextEditor(text: text)
-                .font(.body)
-                .frame(minHeight: 60)
-                .padding(8)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
-                .overlay(alignment: .topLeading) {
-                    if text.wrappedValue.isEmpty {
-                        Text(placeholder).foregroundStyle(.tertiary).padding(12).allowsHitTesting(false)
-                    }
-                }
+            RichTextEditorWithToolbar(
+                rtfData: rtfData,
+                plainText: plainText,
+                minHeight: 80
+            )
 
             // Image / GIF
             CardImagePicker(imageData: imageData)
