@@ -174,7 +174,7 @@ struct CardListView: View {
                     vm.searchText.isEmpty ? "No Cards" : "No Results",
                     systemImage: vm.searchText.isEmpty ? "rectangle.stack.badge.plus" : "magnifyingglass",
                     description: Text(vm.searchText.isEmpty
-                        ? "Tap "New Card" to add your first card."
+                        ? "Tap New Card to add your first card."
                         : "Try a different search term.")
                 )
             } else {

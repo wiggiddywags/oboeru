@@ -26,11 +26,13 @@
 		8EDA23ECFD03ED3FA30ADA13 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43377532EE542A5020E6E27C /* SidebarView.swift */; };
 		A2097B4F9ED1BA88729F1C51 /* CardListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9036A7AF3D5C4989C1BF525D /* CardListView.swift */; };
 		A2AB283219C050EA80DD20C6 /* CardFrontView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D7E12282FFA54A50CCB1A1 /* CardFrontView.swift */; };
+		B516C1E55710AE498C49CBBE /* MediaViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3623BC901EF250DB1981F349 /* MediaViews.swift */; };
 		B58A993039B30CD576F584C7 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671281486F5735F2C55E8032 /* AppCommands.swift */; };
 		B5D7B43E6AD07DE7C5CC211E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53939F3E61ABF6070D9969B /* SettingsView.swift */; };
 		B7E60376ADFD4303FD52B6A6 /* FSRSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D76549EABF3EB7E0B3F64B /* FSRSService.swift */; };
 		BFD40DC46996FFD08617E7EE /* CardEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 624483CAFFD6C90AF3C6AAA3 /* CardEditorSheet.swift */; };
 		C36DE889F1A0A4BCF948B48D /* RatingBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D85E9B685EDE08E1B8A05 /* RatingBarView.swift */; };
+		C76A80E37DB767BA6E166428 /* RichTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28ACE38AABFBEB1064712D6 /* RichTextEditor.swift */; };
 		CEEB090C32465F591A4054AC /* Deck.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2BD46C3C836C4B541448317 /* Deck.swift */; };
 		D20ECB25B614A341C26E1FB2 /* ReviewSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABC40F9308D1EEB4BE7ABE1 /* ReviewSessionView.swift */; };
 		D392D92F0DDEBBC6F6371061 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FF46C87F75F91CC1C2878C /* ColorExtensions.swift */; };
@@ -46,6 +48,7 @@
 		1CB45DB08535D9A24347DC81 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		25E279A64BD94A52F4CA4686 /* CardBackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardBackView.swift; sourceTree = "<group>"; };
 		30D76549EABF3EB7E0B3F64B /* FSRSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSRSService.swift; sourceTree = "<group>"; };
+		3623BC901EF250DB1981F349 /* MediaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViews.swift; sourceTree = "<group>"; };
 		37D7E12282FFA54A50CCB1A1 /* CardFrontView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardFrontView.swift; sourceTree = "<group>"; };
 		43377532EE542A5020E6E27C /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		55A9379D65F9814C84D3BD79 /* StudySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudySession.swift; sourceTree = "<group>"; };
@@ -62,6 +65,7 @@
 		A650EF55AB6534EDDB62A451 /* AnkiImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiImporter.swift; sourceTree = "<group>"; };
 		B04DCF57F10F5CF72D23CEF2 /* Oboeru.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Oboeru.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BABC40F9308D1EEB4BE7ABE1 /* ReviewSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionView.swift; sourceTree = "<group>"; };
+		C28ACE38AABFBEB1064712D6 /* RichTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RichTextEditor.swift; sourceTree = "<group>"; };
 		D71D85E9B685EDE08E1B8A05 /* RatingBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingBarView.swift; sourceTree = "<group>"; };
 		DCCED56317B410EC2578B60D /* StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModel.swift; sourceTree = "<group>"; };
 		DDED942632E99B22F2957EF2 /* DeckDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeckDetailViewModel.swift; sourceTree = "<group>"; };
@@ -80,6 +84,15 @@
 				A53939F3E61ABF6070D9969B /* SettingsView.swift */,
 			);
 			path = Settings;
+			sourceTree = "<group>";
+		};
+		2126F12171989275B7129A01 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				3623BC901EF250DB1981F349 /* MediaViews.swift */,
+				C28ACE38AABFBEB1064712D6 /* RichTextEditor.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		2D698F0F4F876C1F772F6D03 /* Root */ = {
@@ -143,6 +156,7 @@
 				CB8C57A110CA78CCAEA62008 /* Review */,
 				2D698F0F4F876C1F772F6D03 /* Root */,
 				0F6CA514E120ADF80E520DF3 /* Settings */,
+				2126F12171989275B7129A01 /* Shared */,
 				AFB5354CE158357A89D3C26E /* Sidebar */,
 				A46E79D05CC895F2917FC1A2 /* Stats */,
 			);
@@ -307,12 +321,14 @@
 				EFC2CB0300B5015D328E8248 /* DeckListViewModel.swift in Sources */,
 				B7E60376ADFD4303FD52B6A6 /* FSRSService.swift in Sources */,
 				EE7D0474F011793B8C6D1393 /* ImportSheetView.swift in Sources */,
+				B516C1E55710AE498C49CBBE /* MediaViews.swift in Sources */,
 				2F7A44DFFCE978DE34CD2776 /* OboerApp.swift in Sources */,
 				FA6CF5379D3695B4E52B660E /* OboerCard.swift in Sources */,
 				46AC47821C8D5A9BFF0B7822 /* OboerRating.swift in Sources */,
 				6C276189A2AD97F6D99B8AF9 /* OboerReviewLog.swift in Sources */,
 				C36DE889F1A0A4BCF948B48D /* RatingBarView.swift in Sources */,
 				D20ECB25B614A341C26E1FB2 /* ReviewSessionView.swift in Sources */,
+				C76A80E37DB767BA6E166428 /* RichTextEditor.swift in Sources */,
 				B5D7B43E6AD07DE7C5CC211E /* SettingsView.swift in Sources */,
 				8EDA23ECFD03ED3FA30ADA13 /* SidebarView.swift in Sources */,
 				2B0467D1C829A80E7E6DA370 /* StatsDashboardView.swift in Sources */,
