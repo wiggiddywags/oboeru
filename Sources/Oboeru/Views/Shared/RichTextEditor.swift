@@ -320,6 +320,7 @@ struct RichTextDisplayView: NSViewRepresentable {
 
 struct RichTextToolbar: View {
     let state: RichTextEditorState
+    @Binding var isExpanded: Bool
 
     @State private var pickerSize:   CGFloat = 14
     @State private var pickerFamily: String  = "System"
@@ -393,6 +394,17 @@ struct RichTextToolbar: View {
             .help("Clear formatting")
 
             Spacer(minLength: 0)
+
+            // ── Expand / collapse ──
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+            } label: {
+                Image(systemName: isExpanded ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
+                    .frame(width: 24, height: 22)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.secondary)
+            .help(isExpanded ? "Collapse editor" : "Expand editor")
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
@@ -427,20 +439,23 @@ struct RichTextEditorWithToolbar: View {
     @Binding var rtfData: Data?
     @Binding var plainText: String
     var minHeight: CGFloat = 80
+    var expandedHeight: CGFloat = 240
 
     @State private var state = RichTextEditorState()
+    @State private var isExpanded = false
 
     var body: some View {
         VStack(spacing: 0) {
-            RichTextToolbar(state: state)
+            RichTextToolbar(state: state, isExpanded: $isExpanded)
             Divider()
             RichTextEditor(
                 rtfData: $rtfData,
                 plainText: $plainText,
                 state: state,
-                minHeight: minHeight
+                minHeight: isExpanded ? expandedHeight : minHeight
             )
-            .frame(minHeight: minHeight)
+            .frame(minHeight: isExpanded ? expandedHeight : minHeight)
+            .animation(.easeInOut(duration: 0.2), value: isExpanded)
         }
         .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
         .clipShape(RoundedRectangle(cornerRadius: 8))

@@ -5,9 +5,12 @@ struct CardListView: View {
 
     @State private var vm: DeckDetailViewModel
     @State private var isShowingImportSheet = false
+    @State private var viewMode: ViewMode = .list
     @Environment(\.modelContext) private var modelContext
 
     let onStudy: () -> Void
+
+    enum ViewMode { case list, grid }
 
     init(deck: Deck, modelContext: ModelContext, onStudy: @escaping () -> Void) {
         _vm = State(initialValue: DeckDetailViewModel(deck: deck, modelContext: modelContext))
@@ -142,6 +145,16 @@ struct CardListView: View {
 
             Spacer()
 
+            // View mode toggle
+            Picker("View", selection: $viewMode) {
+                Image(systemName: "list.bullet").tag(ViewMode.list)
+                Image(systemName: "square.grid.2x2").tag(ViewMode.grid)
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 60)
+            .labelsHidden()
+            .help("Switch between list and grid view")
+
             // Import
             Button {
                 isShowingImportSheet = true
@@ -168,6 +181,7 @@ struct CardListView: View {
 
     private var cardList: some View {
         let cards = vm.filteredCards()
+        let color = Color(hex: vm.deck.colorHex) ?? .accentColor
         return Group {
             if cards.isEmpty {
                 ContentUnavailableView(
@@ -177,26 +191,11 @@ struct CardListView: View {
                         ? "Tap New Card to add your first card."
                         : "Try a different search term.")
                 )
-            } else {
+            } else if viewMode == .list {
                 List {
                     ForEach(cards) { card in
                         CardRowView(card: card)
-                            .contextMenu {
-                                Button("Edit") {
-                                    vm.editingCard = card
-                                    vm.isShowingCardEditor = true
-                                }
-                                Button(card.isSuspended ? "Unsuspend" : "Suspend") {
-                                    vm.suspendCard(card, suspended: !card.isSuspended)
-                                }
-                                Button("Reset Schedule") {
-                                    vm.resetCardSchedule(card)
-                                }
-                                Divider()
-                                Button("Delete", role: .destructive) {
-                                    vm.deleteCard(card)
-                                }
-                            }
+                            .contextMenu { cardContextMenu(for: card) }
                             .onTapGesture(count: 2) {
                                 vm.editingCard = card
                                 vm.isShowingCardEditor = true
@@ -204,7 +203,42 @@ struct CardListView: View {
                     }
                 }
                 .listStyle(.inset)
+            } else {
+                ScrollView {
+                    LazyVGrid(
+                        columns: [GridItem(.adaptive(minimum: 180, maximum: 220), spacing: 14)],
+                        spacing: 14
+                    ) {
+                        ForEach(cards) { card in
+                            IndexCardCell(card: card, accentColor: color)
+                                .contextMenu { cardContextMenu(for: card) }
+                                .onTapGesture(count: 2) {
+                                    vm.editingCard = card
+                                    vm.isShowingCardEditor = true
+                                }
+                        }
+                    }
+                    .padding(16)
+                }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func cardContextMenu(for card: OboerCard) -> some View {
+        Button("Edit") {
+            vm.editingCard = card
+            vm.isShowingCardEditor = true
+        }
+        Button(card.isSuspended ? "Unsuspend" : "Suspend") {
+            vm.suspendCard(card, suspended: !card.isSuspended)
+        }
+        Button("Reset Schedule") {
+            vm.resetCardSchedule(card)
+        }
+        Divider()
+        Button("Delete", role: .destructive) {
+            vm.deleteCard(card)
         }
     }
 }
@@ -264,6 +298,87 @@ private struct CardRowView: View {
             .font(.caption2)
             .foregroundStyle(color)
             .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.12), in: Capsule())
+    }
+}
+
+// MARK: - Index card cell (grid view)
+
+private struct IndexCardCell: View {
+
+    let card: OboerCard
+    let accentColor: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+
+            // Accent stripe
+            accentColor
+                .frame(maxWidth: .infinity)
+                .frame(height: 4)
+
+            VStack(alignment: .leading, spacing: 8) {
+
+                // Type icon + state badge
+                HStack {
+                    Image(systemName: card.cardType == .cloze ? "text.word.spacing" : "rectangle.2.swap")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    stateBadge
+                }
+
+                // Front text
+                Text(card.displayFront)
+                    .font(.callout)
+                    .lineLimit(4)
+                    .foregroundStyle(card.isSuspended ? .secondary : .primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if card.cardType == .basic && !card.backText.isEmpty {
+                    Divider()
+                    Text(card.backText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+            .padding(10)
+        }
+        .background(.background)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(.separator, lineWidth: 0.5)
+        )
+        .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
+        .opacity(card.isSuspended ? 0.5 : 1)
+    }
+
+    @ViewBuilder
+    private var stateBadge: some View {
+        switch card.fsrsState {
+        case .new:
+            badge("New", color: .blue)
+        case .learning, .relearning:
+            badge("Learning", color: .orange)
+        case .review:
+            if card.isDue {
+                badge("Due", color: .green)
+            } else {
+                Text(card.fsrsDue, style: .relative)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func badge(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.caption2)
+            .foregroundStyle(color)
+            .padding(.horizontal, 5)
             .padding(.vertical, 2)
             .background(color.opacity(0.12), in: Capsule())
     }
