@@ -26,8 +26,55 @@ final class RichTextEditorState {
 
     // MARK: - Actions
 
-    func toggleBold()   { textView?.toggleBoldface(nil) }
-    func toggleItalic() { textView?.toggleItalics(nil) }
+    func toggleBold() {
+        guard let tv = textView, let storage = tv.textStorage else { return }
+        let range = tv.selectedRange()
+        if range.length == 0 {
+            // No selection — toggle typing attributes
+            let cur = tv.typingAttributes[.font] as? NSFont ?? .systemFont(ofSize: 14)
+            let toggled = withTrait(.bold, toggled: true, on: cur)
+            tv.typingAttributes[.font] = toggled
+            isBold = !isBold
+            return
+        }
+        let firstFont = storage.attribute(.font, at: range.location, effectiveRange: nil) as? NSFont ?? .systemFont(ofSize: 14)
+        let addBold = !firstFont.fontDescriptor.symbolicTraits.contains(.bold)
+        storage.beginEditing()
+        storage.enumerateAttribute(.font, in: range, options: []) { val, r, _ in
+            let f = (val as? NSFont) ?? .systemFont(ofSize: 14)
+            storage.addAttribute(.font, value: withTrait(.bold, toggled: addBold, on: f), range: r)
+        }
+        storage.endEditing()
+        isBold = addBold
+    }
+
+    func toggleItalic() {
+        guard let tv = textView, let storage = tv.textStorage else { return }
+        let range = tv.selectedRange()
+        if range.length == 0 {
+            let cur = tv.typingAttributes[.font] as? NSFont ?? .systemFont(ofSize: 14)
+            tv.typingAttributes[.font] = withTrait(.italic, toggled: true, on: cur)
+            isItalic = !isItalic
+            return
+        }
+        let firstFont = storage.attribute(.font, at: range.location, effectiveRange: nil) as? NSFont ?? .systemFont(ofSize: 14)
+        let addItalic = !firstFont.fontDescriptor.symbolicTraits.contains(.italic)
+        storage.beginEditing()
+        storage.enumerateAttribute(.font, in: range, options: []) { val, r, _ in
+            let f = (val as? NSFont) ?? .systemFont(ofSize: 14)
+            storage.addAttribute(.font, value: withTrait(.italic, toggled: addItalic, on: f), range: r)
+        }
+        storage.endEditing()
+        isItalic = addItalic
+    }
+
+    /// Returns a copy of `font` with `trait` added (toggled=true) or removed (toggled=false).
+    private func withTrait(_ trait: NSFontDescriptor.SymbolicTraits, toggled add: Bool, on font: NSFont) -> NSFont {
+        let traits = font.fontDescriptor.symbolicTraits
+        let newTraits = add ? traits.union(trait) : traits.subtracting(trait)
+        let desc = font.fontDescriptor.withSymbolicTraits(newTraits)
+        return NSFont(descriptor: desc, size: font.pointSize) ?? font
+    }
 
     func toggleUnderline() {
         guard let tv = textView, let storage = tv.textStorage else { return }
