@@ -59,8 +59,8 @@ final class CSVImporter {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
 
-        guard let raw = try? String(contentsOf: url, encoding: .utf8) else {
-            return ([], ["Could not read file."])
+        guard let raw = readString(from: url) else {
+            return ([], ["Could not read file. Make sure it is a plain-text CSV saved as UTF-8 or ASCII."])
         }
 
         let rows = parseCSV(raw)
@@ -137,7 +137,7 @@ final class CSVImporter {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
 
-        guard let raw = try? String(contentsOf: url, encoding: .utf8) else {
+        guard let raw = readString(from: url) else {
             return CSVImportResult(created: 0, skipped: 0, errors: ["Could not read file."])
         }
 
@@ -326,6 +326,23 @@ final class CSVImporter {
     }
 
     // MARK: - Helpers
+
+    /// Reads a text file trying UTF-8 first, then UTF-8 with BOM stripped,
+    /// then Windows-1252 (covers most CSV files exported from Excel/Numbers/Google Sheets).
+    private func readString(from url: URL) -> String? {
+        // 1. Plain UTF-8
+        if let s = try? String(contentsOf: url, encoding: .utf8) { return s }
+        // 2. Strip UTF-8 BOM (\xEF\xBB\xBF) then re-read
+        if let data = try? Data(contentsOf: url) {
+            let bom: [UInt8] = [0xEF, 0xBB, 0xBF]
+            let slice = data.prefix(3).elementsEqual(bom) ? data.dropFirst(3) : data
+            if let s = String(data: slice, encoding: .utf8) { return s }
+            // 3. Windows-1252 / Latin-1 (Excel default)
+            if let s = String(data: Data(slice), encoding: .windowsCP1252) { return s }
+            if let s = String(data: Data(slice), encoding: .isoLatin1) { return s }
+        }
+        return nil
+    }
 
     /// Gets a cell value by index or by matching header names.
     private func cell(_ row: [String], index: Int, headers: [String], keys: [String]) -> String {
