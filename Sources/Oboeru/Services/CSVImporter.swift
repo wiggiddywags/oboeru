@@ -19,6 +19,24 @@ import SwiftData
 //   - file:// URL or absolute path → read from disk
 //   - Empty → no image
 
+// MARK: - Draft card (used by preview sheet before committing)
+
+struct CSVDraftCard: Identifiable {
+    var id = UUID()
+    var front: String
+    var back: String
+    var cardType: CardType
+    var isEnabled: Bool = true
+    var sourceRow: Int       // 1-indexed CSV row, 0 = manually added
+
+    init(front: String, back: String, cardType: CardType, sourceRow: Int = 0) {
+        self.front = front
+        self.back = back
+        self.cardType = cardType
+        self.sourceRow = sourceRow
+    }
+}
+
 struct CSVImportResult {
     let created: Int
     let skipped: Int
@@ -34,6 +52,85 @@ final class CSVImporter {
     }
 
     // MARK: - Public
+
+    /// Parses `url` and returns draft cards **without** persisting anything.
+    /// Used by the preview sheet so the user can review/edit before committing.
+    func parseOnly(from url: URL) async -> (cards: [CSVDraftCard], errors: [String]) {
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+
+        guard let raw = try? String(contentsOf: url, encoding: .utf8) else {
+            return ([], ["Could not read file."])
+        }
+
+        let rows = parseCSV(raw)
+        guard !rows.isEmpty else { return ([], ["File is empty."]) }
+
+        let (format, headers, dataRows) = detectFormat(rows)
+        let headerOffset = rows.count - dataRows.count + 1
+        var cards: [CSVDraftCard] = []
+        var errors: [String] = []
+
+        for (i, row) in dataRows.enumerated() {
+            guard !row.isEmpty, !row[0].trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
+            let rowNum = i + headerOffset
+
+            switch format {
+            case .basic:
+                let front = cell(row, index: 0, headers: headers, keys: ["front", "question", "term"]).trimmed
+                let back  = cell(row, index: 1, headers: headers, keys: ["back", "answer", "definition"]).trimmed
+                if front.isEmpty {
+                    errors.append("Row \(rowNum): empty front — skipped")
+                    continue
+                }
+                cards.append(CSVDraftCard(front: front, back: back, cardType: .basic, sourceRow: rowNum))
+
+            case .cloze:
+                let text = row[0].trimmed
+                if !ClozeParser.isValid(text) {
+                    errors.append("Row \(rowNum): no valid {{cloze}} markers — skipped")
+                    continue
+                }
+                cards.append(CSVDraftCard(front: text, back: "", cardType: .cloze, sourceRow: rowNum))
+            }
+        }
+
+        return (cards, errors)
+    }
+
+    /// Imports a set of already-approved draft cards into `deck`.
+    /// Called by the preview sheet after the user clicks "Import".
+    func importDraftCards(_ cards: [CSVDraftCard], into deck: Deck) async -> CSVImportResult {
+        var created = 0
+        var skipped = 0
+        var errors: [String] = []
+
+        for draft in cards where draft.isEnabled {
+            switch draft.cardType {
+            case .basic:
+                guard !draft.front.isEmpty else { skipped += 1; continue }
+                let card = OboerCard(deck: deck, cardType: .basic,
+                                     frontText: draft.front, backText: draft.back)
+                modelContext.insert(card)
+                created += 1
+
+            case .cloze:
+                guard ClozeParser.isValid(draft.front) else { skipped += 1; continue }
+                for sibling in ClozeParser.siblings(for: draft.front) {
+                    let card = OboerCard(
+                        deck: deck, cardType: .cloze,
+                        frontText: sibling.maskedText, backText: sibling.fullText,
+                        clozeText: draft.front, clozeOrdinal: sibling.ordinal
+                    )
+                    modelContext.insert(card)
+                    created += 1
+                }
+            }
+        }
+
+        try? modelContext.save()
+        return CSVImportResult(created: created, skipped: skipped, errors: errors)
+    }
 
     /// Parses `url` and inserts cards into `deck`. Awaitable so image downloads don't block UI.
     func importCSV(from url: URL, into deck: Deck) async -> CSVImportResult {

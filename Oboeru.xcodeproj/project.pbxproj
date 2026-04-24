@@ -16,6 +16,7 @@
 		33EAB53A551A812E2144323F /* CSVImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10784953062009AAEB01F3B8 /* CSVImporter.swift */; };
 		3E33CF11BEF1F00DF6F612EB /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7DFC4728ED06C9A2157FB8 /* StatsService.swift */; };
 		46AC47821C8D5A9BFF0B7822 /* OboerRating.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC609301C53043B58E9B1133 /* OboerRating.swift */; };
+		493B1A18387E7500C9BEC161 /* CSVImportPreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FD989414E9F981B20134AE /* CSVImportPreviewSheet.swift */; };
 		552B75D51C876A0E3E92079E /* CardBackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E279A64BD94A52F4CA4686 /* CardBackView.swift */; };
 		6C276189A2AD97F6D99B8AF9 /* OboerReviewLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6170F7B7E52150073F22157C /* OboerReviewLog.swift */; };
 		6C74E2C110B436820ED27510 /* StatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCED56317B410EC2578B60D /* StatsViewModel.swift */; };
@@ -59,6 +60,7 @@
 		9036A7AF3D5C4989C1BF525D /* CardListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardListView.swift; sourceTree = "<group>"; };
 		94FF46C87F75F91CC1C2878C /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
 		95F04856A5AAA6A73CC25629 /* CardEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorViewModel.swift; sourceTree = "<group>"; };
+		95FD989414E9F981B20134AE /* CSVImportPreviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportPreviewSheet.swift; sourceTree = "<group>"; };
 		962134B67BBDA8C9CFBDB0B6 /* OboerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OboerApp.swift; sourceTree = "<group>"; };
 		9C8DF54C4DEA6C407234EC30 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A53939F3E61ABF6070D9969B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 			children = (
 				624483CAFFD6C90AF3C6AAA3 /* CardEditorSheet.swift */,
 				9036A7AF3D5C4989C1BF525D /* CardListView.swift */,
+				95FD989414E9F981B20134AE /* CSVImportPreviewSheet.swift */,
 				FEC7D69BA27D27BEB2ECA8AE /* ImportSheetView.swift */,
 			);
 			path = Cards;
@@ -306,6 +309,7 @@
 				7946A9ACE654069CD862B167 /* AnkiImporter.swift in Sources */,
 				B58A993039B30CD576F584C7 /* AppCommands.swift in Sources */,
 				8B6A309CE6D6AB983AD1221D /* AppSettings.swift in Sources */,
+				493B1A18387E7500C9BEC161 /* CSVImportPreviewSheet.swift in Sources */,
 				33EAB53A551A812E2144323F /* CSVImporter.swift in Sources */,
 				552B75D51C876A0E3E92079E /* CardBackView.swift in Sources */,
 				BFD40DC46996FFD08617E7EE /* CardEditorSheet.swift in Sources */,

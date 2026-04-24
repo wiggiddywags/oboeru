@@ -19,6 +19,8 @@ struct ImportSheetView: View {
 
     enum Phase {
         case idle
+        case parsingCSV
+        case csvPreview                      // CSV: show editable table
         case importing
         case done(result: ImportSummary)
         case failed(message: String)
@@ -35,6 +37,12 @@ struct ImportSheetView: View {
     @State private var selectedFormat: ImportFormat = .csv
     @State private var showFilePicker = false
     @State private var phase: Phase = .idle
+    // CSV preview state
+    @State private var draftCards: [CSVDraftCard] = []
+    @State private var parseErrors: [String] = []
+    @State private var showParseErrors = false
+    @State private var csvFileName = ""
+    private var enabledCount: Int { draftCards.filter(\.isEnabled).count }
 
     // MARK: - Body
 
@@ -43,9 +51,23 @@ struct ImportSheetView: View {
 
             // ── Header ──
             HStack {
-                Text("Import Cards")
-                    .font(.title2).fontWeight(.semibold)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Import Cards")
+                        .font(.title2).fontWeight(.semibold)
+                    if case .csvPreview = phase, !csvFileName.isEmpty {
+                        HStack(spacing: 4) {
+                            Image(systemName: "doc.text").font(.caption2)
+                            Text(csvFileName).font(.caption)
+                        }
+                        .foregroundStyle(.secondary)
+                    }
+                }
                 Spacer()
+                if case .csvPreview = phase {
+                    Button("Choose Different File") { showFilePicker = true }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                }
                 Button("Done") { onDismiss() }
                     .keyboardShortcut(.escape, modifiers: [])
             }
@@ -55,48 +77,165 @@ struct ImportSheetView: View {
             Divider()
 
             // ── Content ──
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+            if case .csvPreview = phase {
+                csvPreviewTable
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
 
-                    // Format picker
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Format")
-                            .font(.caption).foregroundStyle(.secondary).textCase(.uppercase)
+                        // Format picker
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Format")
+                                .font(.caption).foregroundStyle(.secondary).textCase(.uppercase)
 
-                        Picker("Format", selection: $selectedFormat) {
-                            ForEach(ImportFormat.allCases) { fmt in
-                                Text(fmt.rawValue).tag(fmt)
+                            Picker("Format", selection: $selectedFormat) {
+                                ForEach(ImportFormat.allCases) { fmt in
+                                    Text(fmt.rawValue).tag(fmt)
+                                }
                             }
+                            .pickerStyle(.segmented)
+                            .disabled(!isIdle)
                         }
-                        .pickerStyle(.segmented)
-                        .disabled(!isIdle)
-                    }
 
-                    // Format description
-                    formatDescriptionView
+                        // Format description
+                        formatDescriptionView
 
-                    // Action / result area
-                    switch phase {
-                    case .idle:
-                        idleView
-                    case .importing:
-                        importingView
-                    case .done(let summary):
-                        doneView(summary: summary)
-                    case .failed(let msg):
-                        failedView(message: msg)
+                        // Action / result area
+                        switch phase {
+                        case .idle:
+                            idleView
+                        case .parsingCSV:
+                            HStack(spacing: 12) {
+                                ProgressView().progressViewStyle(.circular).scaleEffect(0.8)
+                                Text("Parsing file…").foregroundStyle(.secondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                        case .importing:
+                            importingView
+                        case .done(let summary):
+                            doneView(summary: summary)
+                        case .failed(let msg):
+                            failedView(message: msg)
+                        case .csvPreview:
+                            EmptyView()
+                        }
                     }
+                    .padding(24)
                 }
-                .padding(24)
             }
         }
-        .frame(width: 520, height: 460)
+        .frame(width: 760, height: 580)
         .fileImporter(
             isPresented: $showFilePicker,
             allowedContentTypes: allowedTypes,
             allowsMultipleSelection: false
         ) { result in
             handleFileSelected(result)
+        }
+    }
+
+    // MARK: - CSV preview table (inline)
+
+    private var csvPreviewTable: some View {
+        VStack(spacing: 0) {
+
+            // Stats / action bar
+            HStack(spacing: 14) {
+                Label("\(draftCards.count) cards parsed", systemImage: "tablecells")
+                    .font(.subheadline).foregroundStyle(.secondary)
+
+                if !parseErrors.isEmpty {
+                    Button {
+                        showParseErrors.toggle()
+                    } label: {
+                        Label("\(parseErrors.count) skipped", systemImage: "exclamationmark.triangle.fill")
+                            .font(.subheadline).foregroundStyle(.orange)
+                    }
+                    .buttonStyle(.plain)
+                    .popover(isPresented: $showParseErrors, arrowEdge: .bottom) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Skipped Rows").font(.subheadline).fontWeight(.semibold)
+                            ForEach(parseErrors, id: \.self) { err in
+                                HStack(alignment: .top, spacing: 5) {
+                                    Image(systemName: "exclamationmark.triangle").font(.caption).foregroundStyle(.orange)
+                                    Text(err).font(.caption).foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .padding(16)
+                        .frame(minWidth: 280, maxWidth: 400)
+                    }
+                }
+
+                Spacer()
+
+                Button("Select All") {
+                    for i in draftCards.indices { draftCards[i].isEnabled = true }
+                }
+                .buttonStyle(.plain).font(.subheadline).foregroundStyle(Color.accentColor)
+
+                Button("Deselect All") {
+                    for i in draftCards.indices { draftCards[i].isEnabled = false }
+                }
+                .buttonStyle(.plain).font(.subheadline).foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 9)
+            .background(.bar)
+
+            Divider()
+
+            // Column headers
+            HStack(spacing: 0) {
+                Color.clear.frame(width: 46)
+                Text("Front").font(.caption).fontWeight(.medium).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Divider().frame(height: 14).padding(.horizontal, 4)
+                Text("Back").font(.caption).fontWeight(.medium).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Color.clear.frame(width: 30)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 5)
+            .background(.quaternary.opacity(0.6))
+
+            Divider()
+
+            // Rows
+            List {
+                ForEach(draftCards.indices, id: \.self) { i in
+                    ImportPreviewRow(card: $draftCards[i]) {
+                        draftCards.remove(at: i)
+                    }
+                }
+                Button {
+                    draftCards.append(CSVDraftCard(front: "", back: "", cardType: .basic, sourceRow: 0))
+                } label: {
+                    Label("Add Card", systemImage: "plus.circle")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .padding(.vertical, 4)
+            }
+            .listStyle(.inset)
+
+            Divider()
+
+            // Footer
+            HStack(spacing: 16) {
+                Text("\(enabledCount) of \(draftCards.count) selected")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                Spacer()
+                Button("Import \(enabledCount) Cards") {
+                    commitCSVImport()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(enabledCount == 0)
+                .keyboardShortcut(.return, modifiers: .command)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
         }
     }
 
@@ -264,45 +403,120 @@ struct ImportSheetView: View {
             phase = .failed(message: error.localizedDescription)
         case .success(let urls):
             guard let url = urls.first else { return }
-            phase = .importing
-            Task {
-                await runImport(url: url)
+            switch selectedFormat {
+            case .csv:
+                // Parse first, show editable preview
+                csvFileName = url.lastPathComponent
+                phase = .parsingCSV
+                Task { await parseCSV(url: url) }
+            case .anki:
+                phase = .importing
+                Task { await runAnkiImport(url: url) }
             }
         }
     }
 
     @MainActor
-    private func runImport(url: URL) async {
-        switch selectedFormat {
-        case .csv:
+    private func parseCSV(url: URL) async {
+        let importer = CSVImporter(modelContext: modelContext)
+        let result = await importer.parseOnly(from: url)
+        if result.cards.isEmpty && !result.errors.isEmpty {
+            phase = .failed(message: result.errors.first ?? "Could not parse file")
+        } else {
+            draftCards = result.cards
+            parseErrors = result.errors
+            phase = .csvPreview
+        }
+    }
+
+    @MainActor
+    private func commitCSVImport() {
+        phase = .importing
+        let approved = draftCards.filter(\.isEnabled)
+        Task {
             let importer = CSVImporter(modelContext: modelContext)
-            let result = await importer.importCSV(from: url, into: deck)
-            if result.created == 0 && !result.errors.isEmpty {
-                phase = .failed(message: result.errors.first ?? "Unknown error")
+            let result = await importer.importDraftCards(approved, into: deck)
+            phase = .done(result: ImportSummary(
+                decksCreated: 0,
+                cardsCreated: result.created,
+                cardsSkipped: result.skipped,
+                errors: result.errors,
+                format: .csv
+            ))
+        }
+    }
+
+    @MainActor
+    private func runAnkiImport(url: URL) async {
+        let importer = AnkiImporter(modelContext: modelContext)
+        let result = await importer.importAPKG(from: url)
+        if result.cardsCreated == 0 && !result.errors.isEmpty {
+            phase = .failed(message: result.errors.first ?? "Unknown error")
+        } else {
+            phase = .done(result: ImportSummary(
+                decksCreated: result.decksCreated,
+                cardsCreated: result.cardsCreated,
+                cardsSkipped: result.cardsSkipped,
+                errors: result.errors,
+                format: .anki
+            ))
+        }
+    }
+}
+
+// MARK: - Inline preview row (shared with ImportSheetView)
+
+struct ImportPreviewRow: View {
+
+    @Binding var card: CSVDraftCard
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Toggle("", isOn: $card.isEnabled)
+                .toggleStyle(.checkbox)
+                .labelsHidden()
+                .frame(width: 20)
+
+            Button {
+                card.cardType = card.cardType == .basic ? .cloze : .basic
+            } label: {
+                Text(card.cardType == .basic ? "Basic" : "Cloze")
+                    .font(.caption2).fontWeight(.semibold)
+                    .foregroundStyle(card.cardType == .basic ? Color.blue : Color.orange)
+                    .padding(.horizontal, 6).padding(.vertical, 3)
+                    .frame(width: 46)
+                    .background(
+                        (card.cardType == .basic ? Color.blue : Color.orange).opacity(0.12),
+                        in: RoundedRectangle(cornerRadius: 4)
+                    )
+            }
+            .buttonStyle(.plain)
+            .help("Tap to toggle Basic / Cloze")
+
+            TextField("Front…", text: $card.front)
+                .textFieldStyle(.plain).font(.callout)
+
+            Divider().frame(height: 16)
+
+            if card.cardType == .basic {
+                TextField("Back…", text: $card.back)
+                    .textFieldStyle(.plain).font(.callout)
             } else {
-                phase = .done(result: ImportSummary(
-                    decksCreated: 0,
-                    cardsCreated: result.created,
-                    cardsSkipped: result.skipped,
-                    errors: result.errors,
-                    format: .csv
-                ))
+                Text("auto-generated from cloze markers")
+                    .font(.callout).foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-        case .anki:
-            let importer = AnkiImporter(modelContext: modelContext)
-            let result = await importer.importAPKG(from: url)
-            if result.cardsCreated == 0 && !result.errors.isEmpty {
-                phase = .failed(message: result.errors.first ?? "Unknown error")
-            } else {
-                phase = .done(result: ImportSummary(
-                    decksCreated: result.decksCreated,
-                    cardsCreated: result.cardsCreated,
-                    cardsSkipped: result.cardsSkipped,
-                    errors: result.errors,
-                    format: .anki
-                ))
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+                    .font(.caption).foregroundStyle(.secondary)
             }
+            .buttonStyle(.plain)
+            .frame(width: 28)
+            .opacity(0.7)
         }
+        .padding(.vertical, 2)
+        .opacity(card.isEnabled ? 1 : 0.45)
     }
 }

@@ -1,13 +1,16 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct DeckEditorSheet: View {
 
     @State private var name: String = ""
     @State private var selectedColor: String = "#5E9CF0"
     @State private var selectedIcon: String = "rectangle.stack"
+    @State private var csvURL: URL? = nil
+    @State private var showCSVPicker = false
 
     var existingDeck: Deck?
-    let onSave: (String, String, String) -> Void
+    let onSave: (String, String, String, URL?) -> Void
     let onCancel: () -> Void
 
     private let colors = [
@@ -21,7 +24,9 @@ struct DeckEditorSheet: View {
         "numbers", "doc.text.fill", "paintpalette.fill", "figure.run"
     ]
 
-    init(existingDeck: Deck? = nil, onSave: @escaping (String, String, String) -> Void, onCancel: @escaping () -> Void) {
+    init(existingDeck: Deck? = nil,
+         onSave: @escaping (String, String, String, URL?) -> Void,
+         onCancel: @escaping () -> Void) {
         self.existingDeck = existingDeck
         self.onSave = onSave
         self.onCancel = onCancel
@@ -60,6 +65,43 @@ struct DeckEditorSheet: View {
                 Section("Icon") {
                     iconPicker
                 }
+
+                // CSV import only available when creating a new deck
+                if existingDeck == nil {
+                    Section {
+                        HStack(spacing: 12) {
+                            if let url = csvURL {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(url.lastPathComponent)
+                                        .font(.subheadline)
+                                        .lineLimit(1)
+                                    Text("Cards will be previewed after creating the deck")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Button("Remove") { csvURL = nil }
+                                    .buttonStyle(.plain)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.red)
+                            } else {
+                                Image(systemName: "doc.badge.plus")
+                                    .foregroundStyle(.secondary)
+                                Text("Import from CSV (optional)")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Button("Choose File…") { showCSVPicker = true }
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.small)
+                            }
+                        }
+                    } header: {
+                        Text("Populate Deck")
+                    }
+                }
             }
             .formStyle(.grouped)
 
@@ -69,10 +111,10 @@ struct DeckEditorSheet: View {
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.escape, modifiers: [])
                 Spacer()
-                Button("Save") {
+                Button(csvURL != nil ? "Create & Preview Import" : "Save") {
                     let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !trimmed.isEmpty else { return }
-                    onSave(trimmed, selectedColor, selectedIcon)
+                    onSave(trimmed, selectedColor, selectedIcon, csvURL)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -80,7 +122,16 @@ struct DeckEditorSheet: View {
             }
             .padding(16)
         }
-        .frame(width: 400, height: 520)
+        .frame(width: 400, height: existingDeck == nil ? 590 : 520)
+        .fileImporter(
+            isPresented: $showCSVPicker,
+            allowedContentTypes: [.commaSeparatedText, .tabSeparatedText, .plainText],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result {
+                csvURL = urls.first
+            }
+        }
     }
 
     private var deckPreview: some View {

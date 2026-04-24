@@ -1,10 +1,19 @@
 import SwiftUI
 
+private struct PendingCSVImport: Identifiable {
+    let id = UUID()
+    let deck: Deck
+    let url: URL
+}
+
 struct SidebarView: View {
 
     @Bindable var vm: DeckListViewModel
     var onStudy: (UUID?) -> Void   // nil = study all
     var onStats: () -> Void
+
+    @Environment(\.modelContext) private var modelContext
+    @State private var pendingCSVImport: PendingCSVImport? = nil
 
     var body: some View {
         List(selection: $vm.selectedDeckID) {
@@ -45,11 +54,14 @@ struct SidebarView: View {
         } content: {
             DeckEditorSheet(
                 existingDeck: vm.editingDeck,
-                onSave: { name, color, icon in
+                onSave: { name, color, icon, csvURL in
                     if let existing = vm.editingDeck {
                         vm.updateDeck(existing, name: name, colorHex: color, iconName: icon)
                     } else {
-                        vm.createDeck(name: name, colorHex: color, iconName: icon)
+                        let newDeck = vm.createDeck(name: name, colorHex: color, iconName: icon)
+                        if let url = csvURL {
+                            pendingCSVImport = PendingCSVImport(deck: newDeck, url: url)
+                        }
                     }
                     vm.editingDeck           = nil
                     vm.isShowingNewDeckSheet = false
@@ -57,6 +69,17 @@ struct SidebarView: View {
                 onCancel: {
                     vm.editingDeck         = nil
                     vm.isShowingNewDeckSheet = false
+                }
+            )
+        }
+        .sheet(item: $pendingCSVImport) { pending in
+            CSVImportPreviewSheet(
+                deck: pending.deck,
+                initialURL: pending.url,
+                modelContext: modelContext,
+                onDismiss: {
+                    pendingCSVImport = nil
+                    vm.load()
                 }
             )
         }

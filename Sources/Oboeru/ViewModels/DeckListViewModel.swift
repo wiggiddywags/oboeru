@@ -44,11 +44,13 @@ final class DeckListViewModel {
 
     // MARK: - CRUD
 
-    func createDeck(name: String, colorHex: String = "#5E9CF0", iconName: String = "rectangle.stack") {
+    @discardableResult
+    func createDeck(name: String, colorHex: String = "#5E9CF0", iconName: String = "rectangle.stack") -> Deck {
         let deck = Deck(name: name, colorHex: colorHex, iconName: iconName)
         modelContext.insert(deck)
         try? modelContext.save()
         load()
+        return deck
     }
 
     func deleteDeck(_ deck: Deck) {
