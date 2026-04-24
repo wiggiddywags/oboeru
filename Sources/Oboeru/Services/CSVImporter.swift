@@ -1,25 +1,30 @@
 import Foundation
 import SwiftData
 
-// CSVImporter parses a CSV file and creates OboerCards in the given deck.
+// CSVImporter parses a CSV/TSV file and creates OboerCards in the given deck.
 //
-// Supported formats:
+// Robustness features
+// ───────────────────
+// • Auto-detects delimiter: comma, tab, semicolon, pipe
+// • Encoding fallback: UTF-8 → UTF-8+BOM → Windows-1252 → Latin-1
+// • Strips HTML tags; decodes HTML entities (Anki / Google Sheets exports)
+// • Normalises whitespace (non-breaking spaces, collapsed runs, leading/trailing)
+// • Flexible column names: see frontKeys / backKeys / clozeKeys below
+// • Reversed columns detected ("Back, Front" → swapped automatically)
+// • Extra columns (tags, notes, audio) silently ignored
+// • Duplicate front-text flagged as warnings in preview
 //
-//   Basic (2+ columns):
-//     Front,Back[,Front Image,Back Image]
-//     What is the capital of France?,Paris
-//     What color is the sky?,Blue,https://example.com/sky.jpg
+// Supported card formats
+// ──────────────────────
+// Basic (2+ columns):
+//   Front,Back
+//   What is the capital of France?,Paris
 //
-//   Cloze (1 column, or "Text"/"text" header, or any cell containing {{}}):
-//     Text
-//     The {{capital::city}} of France is {{Paris}}.
-//
-// Image columns accept:
-//   - https:// or http:// URL  → downloaded during import
-//   - file:// URL or absolute path → read from disk
-//   - Empty → no image
+// Cloze (single column, or any cell with {{...}}):
+//   Text
+//   The {{capital}} of France is {{Paris}}.
 
-// MARK: - Draft card (used by preview sheet before committing)
+// MARK: - Draft card
 
 struct CSVDraftCard: Identifiable {
     var id = UUID()
@@ -27,7 +32,7 @@ struct CSVDraftCard: Identifiable {
     var back: String
     var cardType: CardType
     var isEnabled: Bool = true
-    var sourceRow: Int       // 1-indexed CSV row, 0 = manually added
+    var sourceRow: Int       // 1-indexed CSV row; 0 = manually added
 
     init(front: String, back: String, cardType: CardType, sourceRow: Int = 0) {
         self.front = front
@@ -43,6 +48,8 @@ struct CSVImportResult {
     let errors: [String]
 }
 
+// MARK: - Importer
+
 final class CSVImporter {
 
     private let modelContext: ModelContext
@@ -51,43 +58,70 @@ final class CSVImporter {
         self.modelContext = modelContext
     }
 
-    // MARK: - Public
+    // MARK: - Column name vocabularies
+
+    /// All recognised names for the "front / question" column.
+    private let frontKeys = [
+        "front", "question", "term", "word", "kanji", "hanzi",
+        "prompt", "q", "stimulus", "target", "phrase", "sentence",
+        "english", "native", "source",
+    ]
+    /// All recognised names for the "back / answer" column.
+    private let backKeys = [
+        "back", "answer", "definition", "meaning", "reading",
+        "translation", "response", "a", "gloss", "explanation",
+        "foreign", "target language", "pinyin", "furigana",
+    ]
+    /// All recognised names for a cloze-text column.
+    private let clozeKeys = ["text", "cloze", "note", "card", "content"]
+
+    // MARK: - Public API
 
     /// Parses `url` and returns draft cards **without** persisting anything.
-    /// Used by the preview sheet so the user can review/edit before committing.
     func parseOnly(from url: URL) async -> (cards: [CSVDraftCard], errors: [String]) {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
 
         guard let raw = readString(from: url) else {
-            return ([], ["Could not read file. Make sure it is a plain-text CSV saved as UTF-8 or ASCII."])
+            return ([], ["Could not read file. Ensure it is a plain-text CSV/TSV (UTF-8, UTF-16, or Windows-1252)."])
         }
 
-        let rows = parseCSV(raw)
+        let delimiter = detectDelimiter(in: raw)
+        let rows      = parseCSV(raw, delimiter: delimiter)
         guard !rows.isEmpty else { return ([], ["File is empty."]) }
 
-        let (format, headers, dataRows) = detectFormat(rows)
+        let (format, colMap, dataRows) = detectFormat(rows, delimiter: delimiter)
         let headerOffset = rows.count - dataRows.count + 1
-        var cards: [CSVDraftCard] = []
-        var errors: [String] = []
+        var cards:  [CSVDraftCard] = []
+        var errors: [String]       = []
+        var seenFronts: Set<String> = []
 
         for (i, row) in dataRows.enumerated() {
-            guard !row.isEmpty, !row[0].trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
             let rowNum = i + headerOffset
+            // Skip entirely-blank rows
+            guard row.contains(where: { !$0.trimmed.isEmpty }) else { continue }
 
             switch format {
             case .basic:
-                let front = cell(row, index: 0, headers: headers, keys: ["front", "question", "term"]).trimmed
-                let back  = cell(row, index: 1, headers: headers, keys: ["back", "answer", "definition"]).trimmed
-                if front.isEmpty {
+                let front = cleanCell(rawCell(row, col: colMap.frontIndex))
+                let back  = cleanCell(rawCell(row, col: colMap.backIndex))
+                guard !front.isEmpty else {
                     errors.append("Row \(rowNum): empty front — skipped")
                     continue
                 }
+                if seenFronts.contains(front) {
+                    errors.append("Row \(rowNum): duplicate front text \"\(front.truncated(40))\"")
+                }
+                seenFronts.insert(front)
                 cards.append(CSVDraftCard(front: front, back: back, cardType: .basic, sourceRow: rowNum))
 
             case .cloze:
-                let text = row[0].trimmed
-                if !ClozeParser.isValid(text) {
+                let text = cleanCell(rawCell(row, col: colMap.frontIndex))
+                guard !text.isEmpty else {
+                    errors.append("Row \(rowNum): empty text — skipped")
+                    continue
+                }
+                guard ClozeParser.isValid(text) else {
                     errors.append("Row \(rowNum): no valid {{cloze}} markers — skipped")
                     continue
                 }
@@ -98,31 +132,27 @@ final class CSVImporter {
         return (cards, errors)
     }
 
-    /// Imports a set of already-approved draft cards into `deck`.
-    /// Called by the preview sheet after the user clicks "Import".
+    /// Imports pre-approved draft cards into `deck`.
     func importDraftCards(_ cards: [CSVDraftCard], into deck: Deck) async -> CSVImportResult {
-        var created = 0
-        var skipped = 0
+        var created = 0, skipped = 0
         var errors: [String] = []
 
         for draft in cards where draft.isEnabled {
             switch draft.cardType {
             case .basic:
                 guard !draft.front.isEmpty else { skipped += 1; continue }
-                let card = OboerCard(deck: deck, cardType: .basic,
-                                     frontText: draft.front, backText: draft.back)
-                modelContext.insert(card)
+                modelContext.insert(OboerCard(deck: deck, cardType: .basic,
+                                              frontText: draft.front, backText: draft.back))
                 created += 1
 
             case .cloze:
                 guard ClozeParser.isValid(draft.front) else { skipped += 1; continue }
                 for sibling in ClozeParser.siblings(for: draft.front) {
-                    let card = OboerCard(
+                    modelContext.insert(OboerCard(
                         deck: deck, cardType: .cloze,
                         frontText: sibling.maskedText, backText: sibling.fullText,
                         clozeText: draft.front, clozeOrdinal: sibling.ordinal
-                    )
-                    modelContext.insert(card)
+                    ))
                     created += 1
                 }
             }
@@ -132,7 +162,7 @@ final class CSVImporter {
         return CSVImportResult(created: created, skipped: skipped, errors: errors)
     }
 
-    /// Parses `url` and inserts cards into `deck`. Awaitable so image downloads don't block UI.
+    /// Legacy direct-import path (skips preview). Still used for the Anki fallback path.
     func importCSV(from url: URL, into deck: Deck) async -> CSVImportResult {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
@@ -141,23 +171,22 @@ final class CSVImporter {
             return CSVImportResult(created: 0, skipped: 0, errors: ["Could not read file."])
         }
 
-        let rows = parseCSV(raw)
+        let delimiter = detectDelimiter(in: raw)
+        let rows      = parseCSV(raw, delimiter: delimiter)
         guard !rows.isEmpty else {
             return CSVImportResult(created: 0, skipped: 0, errors: ["File is empty."])
         }
 
-        let (format, headers, dataRows) = detectFormat(rows)
-        var created = 0
-        var skipped = 0
+        let (format, colMap, dataRows) = detectFormat(rows, delimiter: delimiter)
+        var created = 0, skipped = 0
         var errors: [String] = []
 
         for (i, row) in dataRows.enumerated() {
+            guard row.contains(where: { !$0.trimmed.isEmpty }) else { continue }
             do {
-                let didCreate = try await createCard(
-                    row: row, rowIndex: i + 2, format: format,
-                    headers: headers, deck: deck
-                )
-                if didCreate { created += 1 } else { skipped += 1 }
+                let ok = try await createCard(row: row, rowIndex: i + 2,
+                                              format: format, colMap: colMap, deck: deck)
+                if ok { created += 1 } else { skipped += 1 }
             } catch {
                 errors.append("Row \(i + 2): \(error.localizedDescription)")
                 skipped += 1
@@ -168,112 +197,142 @@ final class CSVImporter {
         return CSVImportResult(created: created, skipped: skipped, errors: errors)
     }
 
-    // MARK: - Format detection
+    // MARK: - Column map
+
+    struct ColumnMap {
+        var frontIndex: Int? = nil
+        var backIndex:  Int? = nil
+        var isReversed: Bool = false
+    }
+
+    // MARK: - Format / delimiter detection
 
     enum CSVFormat { case basic, cloze }
 
-    private func detectFormat(_ rows: [[String]]) -> (CSVFormat, [String], [[String]]) {
-        guard let firstRow = rows.first else { return (.basic, [], []) }
+    /// Scores each candidate delimiter by consistency across the first 10 non-empty lines.
+    func detectDelimiter(in text: String) -> Character {
+        let sample = String(text.prefix(8192))
+        let lines  = sample.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .prefix(10)
 
-        // Check if first row looks like a header (no {{}} and not obviously content)
-        let looksLikeHeader = firstRow.allSatisfy { cell in
-            !cell.contains("{{") && cell.count < 60
+        let candidates: [Character] = ["\t", ",", ";", "|"]
+        var bestDelim: Character = ","
+        var bestScore = -1
+
+        for delim in candidates {
+            let counts = lines.map { $0.filter { $0 == delim }.count }
+            let nonZero = counts.filter { $0 > 0 }
+            guard nonZero.count >= 2 else { continue }
+
+            // Score: number of lines with this delimiter × minimum count per line,
+            // boosted if the count is the same across all lines (very consistent).
+            let minC = nonZero.min()!
+            let maxC = nonZero.max()!
+            let consistencyBonus = (minC == maxC) ? nonZero.count * 4 : 0
+            let score = nonZero.count * minC + consistencyBonus
+            if score > bestScore { bestScore = score; bestDelim = delim }
         }
+        return bestDelim
+    }
 
-        let headers = looksLikeHeader ? firstRow.map { $0.lowercased() } : []
-        let dataRows = looksLikeHeader ? Array(rows.dropFirst()) : rows
+    /// Determines the card format and maps column indices.
+    private func detectFormat(_ rows: [[String]], delimiter: Character) -> (CSVFormat, ColumnMap, [[String]]) {
+        guard let firstRow = rows.first else { return (.basic, ColumnMap(), []) }
 
-        // Cloze if: single column named "text", OR any data cell contains {{}}
-        let isSingleColumn = (firstRow.count == 1) || (headers.count == 1 && headers[0] == "text")
-        let hasClozeMarkers = dataRows.prefix(5).contains { row in
+        // Score the first row as a header: matches known vocab, short, no {{}}
+        let headerScore = firstRow.reduce(0) { score, cell in
+            let c = cell.lowercased().trimmed
+            let isKnown  = frontKeys.contains(c) || backKeys.contains(c) || clozeKeys.contains(c)
+            let isShort  = c.count < 50
+            let hasMarks = c.contains("{{")
+            return score + (isKnown ? 3 : 0) + (isShort && !hasMarks ? 1 : 0)
+        }
+        let isHeader  = headerScore >= 2 || firstRow.allSatisfy { !$0.contains("{{") && $0.count < 50 }
+        let headers   = isHeader ? firstRow.map { $0.lowercased().trimmed } : []
+        let dataRows  = isHeader ? Array(rows.dropFirst()) : rows
+
+        // Build column map from headers (or fall back to positional)
+        var colMap = ColumnMap()
+        if !headers.isEmpty {
+            for (i, h) in headers.enumerated() {
+                if frontKeys.contains(h)     { colMap.frontIndex = i }
+                else if backKeys.contains(h) { colMap.backIndex  = i }
+                else if clozeKeys.contains(h), colMap.frontIndex == nil { colMap.frontIndex = i }
+            }
+            // Detect reversed layout: back found before front
+            if let b = colMap.backIndex, let f = colMap.frontIndex, b < f {
+                swap(&colMap.frontIndex, &colMap.backIndex)
+                colMap.isReversed = true
+            }
+        }
+        // Positional fallback
+        if colMap.frontIndex == nil { colMap.frontIndex = 0 }
+        if colMap.backIndex  == nil, firstRow.count >= 2 { colMap.backIndex = 1 }
+
+        // Decide format
+        let effectiveCols = firstRow.count
+        let hasClozeHeader = headers.contains(where: { clozeKeys.contains($0) })
+        let hasClozeData   = dataRows.prefix(5).contains { row in
             row.first?.contains("{{") == true
         }
 
-        if isSingleColumn || hasClozeMarkers {
-            return (.cloze, headers, dataRows)
+        if effectiveCols == 1 || hasClozeHeader || hasClozeData {
+            return (.cloze, colMap, dataRows)
         }
-
-        return (.basic, headers, dataRows)
+        return (.basic, colMap, dataRows)
     }
 
-    // MARK: - Card creation
+    // MARK: - Card creation (legacy direct-import path)
 
-    private func createCard(
-        row: [String], rowIndex: Int, format: CSVFormat,
-        headers: [String], deck: Deck
-    ) async throws -> Bool {
-        guard !row.isEmpty, !row[0].trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return false
-        }
+    private func createCard(row: [String], rowIndex: Int, format: CSVFormat,
+                            colMap: ColumnMap, deck: Deck) async throws -> Bool {
+        guard row.contains(where: { !$0.trimmed.isEmpty }) else { return false }
 
         switch format {
         case .basic:
-            return try await createBasicCard(row: row, headers: headers, deck: deck)
-        case .cloze:
-            return try await createClozeCard(row: row, headers: headers, deck: deck)
-        }
-    }
-
-    private func createBasicCard(row: [String], headers: [String], deck: Deck) async throws -> Bool {
-        let front = cell(row, index: 0, headers: headers, keys: ["front", "question", "term"]).trimmed
-        let back  = cell(row, index: 1, headers: headers, keys: ["back", "answer", "definition"]).trimmed
-        guard !front.isEmpty else { return false }
-
-        let frontImageURL = cell(row, index: 2, headers: headers, keys: ["front image", "front_image", "image"]).trimmed
-        let backImageURL  = cell(row, index: 3, headers: headers, keys: ["back image",  "back_image"]).trimmed
-
-        let card = OboerCard(deck: deck, cardType: .basic, frontText: front, backText: back)
-        card.frontImageData = await downloadImage(from: frontImageURL)
-        card.backImageData  = await downloadImage(from: backImageURL)
-        modelContext.insert(card)
-        return true
-    }
-
-    private func createClozeCard(row: [String], headers: [String], deck: Deck) async throws -> Bool {
-        let text = row[0].trimmed
-        guard ClozeParser.isValid(text) else { return false }
-
-        let imageURL = cell(row, index: 1, headers: headers, keys: ["image", "front image", "front_image"]).trimmed
-        let imageData = await downloadImage(from: imageURL)
-
-        for sibling in ClozeParser.siblings(for: text) {
-            let card = OboerCard(
-                deck: deck, cardType: .cloze,
-                frontText: sibling.maskedText, backText: sibling.fullText,
-                clozeText: text, clozeOrdinal: sibling.ordinal
-            )
-            card.frontImageData = imageData
+            let front = cleanCell(rawCell(row, col: colMap.frontIndex))
+            let back  = cleanCell(rawCell(row, col: colMap.backIndex))
+            guard !front.isEmpty else { return false }
+            let card = OboerCard(deck: deck, cardType: .basic, frontText: front, backText: back)
             modelContext.insert(card)
+            return true
+
+        case .cloze:
+            let text = cleanCell(rawCell(row, col: colMap.frontIndex))
+            guard ClozeParser.isValid(text) else { return false }
+            for sibling in ClozeParser.siblings(for: text) {
+                modelContext.insert(OboerCard(
+                    deck: deck, cardType: .cloze,
+                    frontText: sibling.maskedText, backText: sibling.fullText,
+                    clozeText: text, clozeOrdinal: sibling.ordinal
+                ))
+            }
+            return true
         }
-        return true
     }
 
     // MARK: - Image downloading
 
     private func downloadImage(from urlString: String) async -> Data? {
         guard !urlString.isEmpty else { return nil }
-
         if urlString.hasPrefix("http://") || urlString.hasPrefix("https://") {
             guard let url = URL(string: urlString) else { return nil }
             return try? await URLSession.shared.data(from: url).0
         }
-
-        // Local file path
-        var fileURL: URL
-        if urlString.hasPrefix("file://") {
-            fileURL = URL(string: urlString) ?? URL(fileURLWithPath: urlString)
-        } else {
-            fileURL = URL(fileURLWithPath: urlString)
-        }
+        let fileURL: URL = urlString.hasPrefix("file://")
+            ? (URL(string: urlString) ?? URL(fileURLWithPath: urlString))
+            : URL(fileURLWithPath: urlString)
         return try? Data(contentsOf: fileURL)
     }
 
-    // MARK: - CSV parsing (RFC 4180 compliant)
+    // MARK: - RFC 4180 CSV parser (delimiter-aware)
 
-    func parseCSV(_ text: String) -> [[String]] {
-        var rows: [[String]] = []
-        var currentRow: [String] = []
-        var currentField = ""
+    func parseCSV(_ text: String, delimiter: Character = ",") -> [[String]] {
+        var rows:         [[String]] = []
+        var currentRow:   [String]   = []
+        var currentField: String     = ""
         var inQuotes = false
         var i = text.startIndex
 
@@ -284,6 +343,7 @@ final class CSVImporter {
                 if c == "\"" {
                     let next = text.index(after: i)
                     if next < text.endIndex && text[next] == "\"" {
+                        // Escaped quote → literal "
                         currentField.append("\"")
                         i = text.index(after: next)
                         continue
@@ -296,17 +356,17 @@ final class CSVImporter {
             } else {
                 if c == "\"" {
                     inQuotes = true
-                } else if c == "," {
+                } else if c == delimiter {
                     currentRow.append(currentField)
                     currentField = ""
                 } else if c == "\n" || c == "\r" {
                     currentRow.append(currentField)
                     currentField = ""
-                    if !currentRow.allSatisfy({ $0.isEmpty }) {
+                    if currentRow.contains(where: { !$0.isEmpty }) {
                         rows.append(currentRow)
                     }
                     currentRow = []
-                    // Skip \r\n
+                    // Consume \r\n as one newline
                     let next = text.index(after: i)
                     if c == "\r", next < text.endIndex, text[next] == "\n" {
                         i = next
@@ -318,43 +378,124 @@ final class CSVImporter {
             i = text.index(after: i)
         }
 
-        // Final field/row
         currentRow.append(currentField)
-        if !currentRow.allSatisfy({ $0.isEmpty }) { rows.append(currentRow) }
-
+        if currentRow.contains(where: { !$0.isEmpty }) { rows.append(currentRow) }
         return rows
     }
 
-    // MARK: - Helpers
+    // MARK: - Cell cleaning
 
-    /// Reads a text file trying UTF-8 first, then UTF-8 with BOM stripped,
-    /// then Windows-1252 (covers most CSV files exported from Excel/Numbers/Google Sheets).
+    /// Returns the raw string at `col`, or "" if out of bounds.
+    private func rawCell(_ row: [String], col: Int?) -> String {
+        guard let col, col < row.count else { return "" }
+        return row[col]
+    }
+
+    /// Strips HTML, decodes entities, normalises whitespace.
+    func cleanCell(_ raw: String) -> String {
+        var s = raw
+
+        // Replace block-level tags with newlines before stripping
+        let blockTags = ["</p>", "<br>", "<br/>", "<br />", "</div>", "</li>", "</tr>"]
+        for tag in blockTags {
+            s = s.replacingOccurrences(of: tag, with: "\n", options: .caseInsensitive)
+        }
+
+        // Strip all remaining HTML tags
+        if s.contains("<") {
+            s = s.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        }
+
+        // Decode HTML entities
+        s = decodeHTMLEntities(s)
+
+        // Replace non-breaking space and other odd Unicode spaces with regular space
+        s = s.replacingOccurrences(of: "\u{00A0}", with: " ")  // NBSP
+        s = s.replacingOccurrences(of: "\u{2009}", with: " ")  // thin space
+        s = s.replacingOccurrences(of: "\u{200B}", with: "")   // zero-width space
+
+        // Collapse multiple spaces within each line; preserve newlines
+        let lines = s.components(separatedBy: "\n").map { line -> String in
+            line.components(separatedBy: " ").filter { !$0.isEmpty }.joined(separator: " ")
+        }
+        s = lines.joined(separator: "\n")
+
+        return s.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func decodeHTMLEntities(_ input: String) -> String {
+        var s = input
+        // Named entities (case-insensitive)
+        let named: [(String, String)] = [
+            ("&amp;",   "&"),  ("&lt;",    "<"),  ("&gt;",   ">"),
+            ("&quot;",  "\""), ("&apos;",  "'"),  ("&#39;",  "'"),
+            ("&nbsp;",  " "),  ("&hellip;","…"),  ("&mdash;","—"),
+            ("&ndash;", "–"),  ("&laquo;", "«"),  ("&raquo;","»"),
+            ("&lsquo;", "'"),  ("&rsquo;", "'"),  ("&ldquo;","\u{201C}"),
+            ("&rdquo;", "\u{201D}"),               ("&bull;", "•"),
+        ]
+        for (entity, char) in named {
+            s = s.replacingOccurrences(of: entity, with: char, options: .caseInsensitive)
+        }
+        // Numeric decimal entities: &#NNN;
+        if s.contains("&#") {
+            if let re = try? NSRegularExpression(pattern: #"&#(\d+);"#) {
+                let ns = NSMutableString(string: s)
+                let matches = re.matches(in: s, range: NSRange(s.startIndex..., in: s))
+                for match in matches.reversed() {
+                    if let numRange = Range(match.range(at: 1), in: s),
+                       let code = UInt32(s[numRange]),
+                       let scalar = Unicode.Scalar(code) {
+                        ns.replaceCharacters(in: match.range, with: String(Character(scalar)))
+                    }
+                }
+                s = ns as String
+            }
+        }
+        // Numeric hex entities: &#xHHH;
+        if s.contains("&#x") || s.contains("&#X") {
+            if let re = try? NSRegularExpression(pattern: #"&#[xX]([0-9a-fA-F]+);"#) {
+                let ns = NSMutableString(string: s)
+                let matches = re.matches(in: s, range: NSRange(s.startIndex..., in: s))
+                for match in matches.reversed() {
+                    if let hexRange = Range(match.range(at: 1), in: s),
+                       let code = UInt32(s[hexRange], radix: 16),
+                       let scalar = Unicode.Scalar(code) {
+                        ns.replaceCharacters(in: match.range, with: String(Character(scalar)))
+                    }
+                }
+                s = ns as String
+            }
+        }
+        return s
+    }
+
+    // MARK: - Encoding
+
     private func readString(from url: URL) -> String? {
         // 1. Plain UTF-8
         if let s = try? String(contentsOf: url, encoding: .utf8) { return s }
-        // 2. Strip UTF-8 BOM (\xEF\xBB\xBF) then re-read
-        if let data = try? Data(contentsOf: url) {
-            let bom: [UInt8] = [0xEF, 0xBB, 0xBF]
-            let slice = data.prefix(3).elementsEqual(bom) ? data.dropFirst(3) : data
-            if let s = String(data: slice, encoding: .utf8) { return s }
-            // 3. Windows-1252 / Latin-1 (Excel default)
-            if let s = String(data: Data(slice), encoding: .windowsCP1252) { return s }
-            if let s = String(data: Data(slice), encoding: .isoLatin1) { return s }
-        }
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        // 2. UTF-8 with BOM stripped
+        let bom: [UInt8] = [0xEF, 0xBB, 0xBF]
+        let payload = data.prefix(3).elementsEqual(bom) ? Data(data.dropFirst(3)) : data
+        if let s = String(data: payload, encoding: .utf8)           { return s }
+        // 3. UTF-16 (some Excel exports)
+        if let s = String(data: data, encoding: .utf16)             { return s }
+        // 4. Windows-1252 / Latin-1 (legacy Excel / Numbers)
+        if let s = String(data: payload, encoding: .windowsCP1252)  { return s }
+        if let s = String(data: payload, encoding: .isoLatin1)      { return s }
         return nil
     }
-
-    /// Gets a cell value by index or by matching header names.
-    private func cell(_ row: [String], index: Int, headers: [String], keys: [String]) -> String {
-        for key in keys {
-            if let hi = headers.firstIndex(of: key), hi < row.count {
-                return row[hi]
-            }
-        }
-        return index < row.count ? row[index] : ""
-    }
 }
+
+// MARK: - String helpers
 
 private extension String {
     var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    func truncated(_ max: Int) -> String {
+        count <= max ? self : String(prefix(max)) + "…"
+    }
 }
+
