@@ -31,6 +31,10 @@ final class CardEditorViewModel {
     var backVideoData: Data? = nil
     var backVideoExt: String? = nil
 
+    // Sketch
+    var frontSketchData: Data? = nil
+    var backSketchData:  Data? = nil
+
     private let existingCard: OboerCard?
     private let deck: Deck
     private let modelContext: ModelContext
@@ -55,10 +59,12 @@ final class CardEditorViewModel {
             self.frontAudioExt  = card.frontAudioExt
             self.backAudioData  = card.backAudioData
             self.backAudioExt   = card.backAudioExt
-            self.frontVideoData = card.frontVideoData
-            self.frontVideoExt  = card.frontVideoExt
-            self.backVideoData  = card.backVideoData
-            self.backVideoExt   = card.backVideoExt
+            self.frontVideoData  = card.frontVideoData
+            self.frontVideoExt   = card.frontVideoExt
+            self.backVideoData   = card.backVideoData
+            self.backVideoExt    = card.backVideoExt
+            self.frontSketchData = card.frontSketchData
+            self.backSketchData  = card.backSketchData
         }
     }
 
@@ -97,10 +103,12 @@ final class CardEditorViewModel {
         card.frontAudioExt  = frontAudioExt
         card.backAudioData  = backAudioData
         card.backAudioExt   = backAudioExt
-        card.frontVideoData = frontVideoData
-        card.frontVideoExt  = frontVideoExt
-        card.backVideoData  = backVideoData
-        card.backVideoExt   = backVideoExt
+        card.frontVideoData  = frontVideoData
+        card.frontVideoExt   = frontVideoExt
+        card.backVideoData   = backVideoData
+        card.backVideoExt    = backVideoExt
+        card.frontSketchData = frontSketchData
+        card.backSketchData  = backSketchData
     }
 
     private func saveBasic() throws {

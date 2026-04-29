@@ -54,6 +54,10 @@ final class OboerCard {
     var frontVideoExt: String?       // file extension, e.g. "mp4"
     var backVideoExt: String?
 
+    // Sketch attachments (JSON-encoded SketchDocument)
+    @Attribute(.externalStorage) var frontSketchData: Data?
+    @Attribute(.externalStorage) var backSketchData: Data?
+
     // Cloze card content
     // Full source text with {{gap::hint?}} markers.
     // Each unique ordinal (1..N) produces a separate sibling OboerCard.

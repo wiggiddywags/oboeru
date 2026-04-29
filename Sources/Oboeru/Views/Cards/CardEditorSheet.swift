@@ -81,7 +81,8 @@ private struct BasicCardEditorBody: View {
                 plainText: $vm.frontText,
                 imageData: $vm.frontImageData,
                 audioData: $vm.frontAudioData, audioExt: $vm.frontAudioExt,
-                videoData: $vm.frontVideoData, videoExt: $vm.frontVideoExt
+                videoData: $vm.frontVideoData, videoExt: $vm.frontVideoExt,
+                sketchData: $vm.frontSketchData
             )
             cardSide(
                 label: "Back",
@@ -90,7 +91,8 @@ private struct BasicCardEditorBody: View {
                 plainText: $vm.backText,
                 imageData: $vm.backImageData,
                 audioData: $vm.backAudioData, audioExt: $vm.backAudioExt,
-                videoData: $vm.backVideoData, videoExt: $vm.backVideoExt
+                videoData: $vm.backVideoData, videoExt: $vm.backVideoExt,
+                sketchData: $vm.backSketchData
             )
         }
     }
@@ -102,7 +104,8 @@ private struct BasicCardEditorBody: View {
         plainText: Binding<String>,
         imageData: Binding<Data?>,
         audioData: Binding<Data?>, audioExt: Binding<String?>,
-        videoData: Binding<Data?>, videoExt: Binding<String?>
+        videoData: Binding<Data?>, videoExt: Binding<String?>,
+        sketchData: Binding<Data?>
     ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
@@ -134,6 +137,9 @@ private struct BasicCardEditorBody: View {
                 data: videoData,
                 fileExt: videoExt
             )
+
+            // Sketch
+            CardSketchPicker(sketchData: sketchData)
         }
     }
 }

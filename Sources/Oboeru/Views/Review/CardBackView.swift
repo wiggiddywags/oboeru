@@ -38,6 +38,12 @@ struct CardBackView: View {
                             .padding(.horizontal, 32)
                     }
 
+                    // Back sketch
+                    if let data = card.backSketchData {
+                        SketchDisplayView(data: data)
+                            .padding(.horizontal, 32)
+                    }
+
                     if let rtf = card.backRTFData {
                         RichTextDisplayView(rtfData: rtf, centered: true)
                             .frame(minHeight: 40)

@@ -33,6 +33,12 @@ struct CardFrontView: View {
                             .padding(.horizontal, 32)
                     }
 
+                    // Sketch
+                    if let data = card.frontSketchData {
+                        SketchDisplayView(data: data)
+                            .padding(.horizontal, 32)
+                    }
+
                     // Audio player
                     if let data = card.frontAudioData {
                         CardAudioPlayerView(data: data)

@@ -15,6 +15,7 @@
 		2F7A44DFFCE978DE34CD2776 /* OboerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962134B67BBDA8C9CFBDB0B6 /* OboerApp.swift */; };
 		33EAB53A551A812E2144323F /* CSVImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10784953062009AAEB01F3B8 /* CSVImporter.swift */; };
 		3E33CF11BEF1F00DF6F612EB /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7DFC4728ED06C9A2157FB8 /* StatsService.swift */; };
+		447F879F09DD11B527285482 /* SketchEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACC7799721E660BAFFD5086 /* SketchEditorView.swift */; };
 		46AC47821C8D5A9BFF0B7822 /* OboerRating.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC609301C53043B58E9B1133 /* OboerRating.swift */; };
 		493B1A18387E7500C9BEC161 /* CSVImportPreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95FD989414E9F981B20134AE /* CSVImportPreviewSheet.swift */; };
 		552B75D51C876A0E3E92079E /* CardBackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E279A64BD94A52F4CA4686 /* CardBackView.swift */; };
@@ -74,6 +75,7 @@
 		EC609301C53043B58E9B1133 /* OboerRating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OboerRating.swift; sourceTree = "<group>"; };
 		F087708EAA7512781A4CCB9F /* StatsDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsDashboardView.swift; sourceTree = "<group>"; };
 		F2BD46C3C836C4B541448317 /* Deck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deck.swift; sourceTree = "<group>"; };
+		FACC7799721E660BAFFD5086 /* SketchEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchEditorView.swift; sourceTree = "<group>"; };
 		FE1289F5EECDCD7072BEE128 /* ClozeParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeParser.swift; sourceTree = "<group>"; };
 		FE7DFC4728ED06C9A2157FB8 /* StatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsService.swift; sourceTree = "<group>"; };
 		FEC7D69BA27D27BEB2ECA8AE /* ImportSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSheetView.swift; sourceTree = "<group>"; };
@@ -93,6 +95,7 @@
 			children = (
 				3623BC901EF250DB1981F349 /* MediaViews.swift */,
 				C28ACE38AABFBEB1064712D6 /* RichTextEditor.swift */,
+				FACC7799721E660BAFFD5086 /* SketchEditorView.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -335,6 +338,7 @@
 				C76A80E37DB767BA6E166428 /* RichTextEditor.swift in Sources */,
 				B5D7B43E6AD07DE7C5CC211E /* SettingsView.swift in Sources */,
 				8EDA23ECFD03ED3FA30ADA13 /* SidebarView.swift in Sources */,
+				447F879F09DD11B527285482 /* SketchEditorView.swift in Sources */,
 				2B0467D1C829A80E7E6DA370 /* StatsDashboardView.swift in Sources */,
 				3E33CF11BEF1F00DF6F612EB /* StatsService.swift in Sources */,
 				6C74E2C110B436820ED27510 /* StatsViewModel.swift in Sources */,
