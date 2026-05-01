@@ -28,6 +28,7 @@
 		8EDA23ECFD03ED3FA30ADA13 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43377532EE542A5020E6E27C /* SidebarView.swift */; };
 		A2097B4F9ED1BA88729F1C51 /* CardListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9036A7AF3D5C4989C1BF525D /* CardListView.swift */; };
 		A2AB283219C050EA80DD20C6 /* CardFrontView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D7E12282FFA54A50CCB1A1 /* CardFrontView.swift */; };
+		A64ECC64FB2F87E37BEFEFEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E206EE1005524DC40B73B7B /* Assets.xcassets */; };
 		B516C1E55710AE498C49CBBE /* MediaViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3623BC901EF250DB1981F349 /* MediaViews.swift */; };
 		B58A993039B30CD576F584C7 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671281486F5735F2C55E8032 /* AppCommands.swift */; };
 		B5D7B43E6AD07DE7C5CC211E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53939F3E61ABF6070D9969B /* SettingsView.swift */; };
@@ -52,6 +53,7 @@
 		30D76549EABF3EB7E0B3F64B /* FSRSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSRSService.swift; sourceTree = "<group>"; };
 		3623BC901EF250DB1981F349 /* MediaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViews.swift; sourceTree = "<group>"; };
 		37D7E12282FFA54A50CCB1A1 /* CardFrontView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardFrontView.swift; sourceTree = "<group>"; };
+		3E206EE1005524DC40B73B7B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		43377532EE542A5020E6E27C /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		55A9379D65F9814C84D3BD79 /* StudySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudySession.swift; sourceTree = "<group>"; };
 		6170F7B7E52150073F22157C /* OboerReviewLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OboerReviewLog.swift; sourceTree = "<group>"; };
@@ -173,6 +175,7 @@
 			isa = PBXGroup;
 			children = (
 				671281486F5735F2C55E8032 /* AppCommands.swift */,
+				3E206EE1005524DC40B73B7B /* Assets.xcassets */,
 				962134B67BBDA8C9CFBDB0B6 /* OboerApp.swift */,
 				F2BB31BDAEF4EC7389F03A8C /* Models */,
 				D8CF29642211B75D95C48DAF /* Services */,
@@ -259,6 +262,7 @@
 			buildConfigurationList = 0F0373CEFD891A84C564EF06 /* Build configuration list for PBXNativeTarget "Oboeru" */;
 			buildPhases = (
 				28280DC058FAA4C484B870C6 /* Sources */,
+				CD69E48221B32BCABFE79032 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -303,6 +307,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CD69E48221B32BCABFE79032 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A64ECC64FB2F87E37BEFEFEF /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		28280DC058FAA4C484B870C6 /* Sources */ = {
