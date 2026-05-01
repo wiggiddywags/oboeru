@@ -4,148 +4,187 @@ import AppKit
 struct CardFrontView: View {
 
     let card: OboerCard
+    @Binding var typedAnswer: String
+    let answerInputEnabled: Bool
     let onShowAnswer: () -> Void
+
+    private var deckColor: Color {
+        Color(hex: card.deck?.colorHex ?? "#5E9CF0") ?? .accentColor
+    }
 
     var body: some View {
         VStack(spacing: 0) {
+
+            // ── Card content ──────────────────────────────────────────────────
             ScrollView {
-                VStack(spacing: 20) {
-                    cardTypeTag
+                VStack(spacing: 0) {
+                    // Deck color accent bar
+                    deckColor
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 3)
+                        .padding(.bottom, 32)
 
-                    // Video (takes priority over image if both present)
-                    if let data = card.frontVideoData {
-                        CardVideoPlayerView(data: data, fileExtension: card.frontVideoExt ?? "mp4")
-                            .padding(.horizontal, 32)
-                    } else if let data = card.frontImageData {
-                        SmartImageView(data: data, maxHeight: 280)
-                            .padding(.horizontal, 32)
-                    }
+                    VStack(spacing: 20) {
+                        cardTypeTag
 
-                    if let rtf = card.frontRTFData {
-                        RichTextDisplayView(rtfData: rtf, centered: true)
-                            .frame(minHeight: 40)
-                            .padding(.horizontal, 32)
-                    } else {
-                        Text(card.displayFront)
-                            .font(.title2)
-                            .multilineTextAlignment(.center)
-                            .textSelection(.enabled)
-                            .padding(.horizontal, 32)
-                    }
+                        // Media (video > image)
+                        if let data = card.frontVideoData {
+                            CardVideoPlayerView(data: data, fileExtension: card.frontVideoExt ?? "mp4")
+                                .padding(.horizontal, 40)
+                        } else if let data = card.frontImageData {
+                            SmartImageView(data: data, maxHeight: 260)
+                                .padding(.horizontal, 40)
+                        }
 
-                    // Sketch
-                    if let data = card.frontSketchData {
-                        SketchDisplayView(data: data)
-                            .padding(.horizontal, 32)
-                    }
+                        // Sketch
+                        if let data = card.frontSketchData {
+                            SketchDisplayView(data: data)
+                                .padding(.horizontal, 40)
+                        }
 
-                    // Audio player
-                    if let data = card.frontAudioData {
-                        CardAudioPlayerView(data: data)
-                            .padding(.horizontal, 32)
+                        // Question text
+                        if let rtf = card.frontRTFData {
+                            RichTextDisplayView(rtfData: rtf, centered: true)
+                                .frame(minHeight: 40)
+                                .padding(.horizontal, 40)
+                        } else {
+                            Text(card.displayFront)
+                                .font(.custom("Georgia", size: 22))
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(4)
+                                .textSelection(.enabled)
+                                .padding(.horizontal, 40)
+                        }
+
+                        // Audio
+                        if let data = card.frontAudioData {
+                            CardAudioPlayerView(data: data)
+                                .padding(.horizontal, 40)
+                        }
                     }
+                    .padding(.bottom, 40)
                 }
-                .padding(.vertical, 40)
                 .frame(maxWidth: .infinity)
             }
 
-            Divider()
+            // ── Bottom bar ────────────────────────────────────────────────────
+            VStack(spacing: 0) {
+                Divider()
 
-            // Answer input field
-            AnswerInputField(onSubmit: onShowAnswer)
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 4)
+                if answerInputEnabled {
+                    // Answer input field
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Your answer")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 20)
 
-            Button(action: onShowAnswer) {
-                Text("Show Answer")
-                    .font(.headline)
+                        AnswerInputField(text: $typedAnswer, onSubmit: onShowAnswer)
+                            .frame(height: 72)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(.separator, lineWidth: 1)
+                            )
+                            .padding(.horizontal, 20)
+                    }
+                    .padding(.vertical, 12)
+
+                    Divider()
+                }
+
+                // Show Answer button
+                Button(action: onShowAnswer) {
+                    HStack {
+                        Text("Show Answer")
+                            .font(.system(size: 15, weight: .medium))
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .medium))
+                    }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                    .frame(height: 44)
+                    .background(deckColor, in: RoundedRectangle(cornerRadius: 10))
+                    .foregroundStyle(.white)
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.space, modifiers: [])
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .keyboardShortcut(.space, modifiers: [])
-            .padding(.horizontal, 16)
-            .padding(.bottom, 16)
         }
     }
 
     private var cardTypeTag: some View {
         Text(card.cardType == .cloze ? "Cloze" : "Basic")
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            .font(.caption2)
+            .fontWeight(.medium)
+            .foregroundStyle(deckColor)
             .padding(.horizontal, 8)
-            .padding(.vertical, 2)
-            .background(.quaternary, in: Capsule())
+            .padding(.vertical, 3)
+            .background(deckColor.opacity(0.10), in: Capsule())
     }
 }
 
-// MARK: - Answer input field
+// MARK: - Answer input field (NSTextView wrapper)
 
-/// A plain multiline text field for typing the answer.
-/// • Enter alone  → calls onSubmit (shows answer)
-/// • Shift+Enter  → inserts a newline
 struct AnswerInputField: NSViewRepresentable {
 
+    @Binding var text: String
     let onSubmit: () -> Void
+    var placeholder: String = "Type your answer…"
 
-    func makeCoordinator() -> Coordinator { Coordinator(onSubmit: onSubmit) }
+    func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
 
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSTextView.scrollableTextView()
         guard let tv = scrollView.documentView as? NSTextView else { return scrollView }
 
-        tv.isRichText = false
-        tv.allowsUndo = true
-        tv.isEditable = true
-        tv.isSelectable = true
+        tv.isRichText    = false
+        tv.allowsUndo    = true
+        tv.isEditable    = true
+        tv.isSelectable  = true
         tv.drawsBackground = false
-        tv.font = .systemFont(ofSize: 14)
-        tv.textColor = .labelColor
-        tv.textContainerInset = NSSize(width: 6, height: 6)
-        tv.delegate = context.coordinator
+        tv.font          = .systemFont(ofSize: 14)
+        tv.textColor     = .labelColor
+        tv.textContainerInset = NSSize(width: 10, height: 8)
+        tv.delegate      = context.coordinator
         context.coordinator.textView = tv
-
-        // Placeholder-style prompt
         tv.insertionPointColor = .controlAccentColor
 
-        scrollView.drawsBackground = false
+        scrollView.drawsBackground   = false
         scrollView.hasVerticalScroller = true
-        scrollView.autohidesScrollers = true
-
-        // Minimal border
-        scrollView.wantsLayer = true
-        scrollView.layer?.cornerRadius = 7
-        scrollView.layer?.borderWidth = 1
-        scrollView.layer?.borderColor = NSColor.separatorColor.cgColor
+        scrollView.autohidesScrollers  = true
 
         return scrollView
     }
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
-        // Update border color on appearance change
-        scrollView.layer?.borderColor = NSColor.separatorColor.cgColor
+        guard let tv = scrollView.documentView as? NSTextView else { return }
+        // Sync external clears (e.g., after rating a card)
+        if tv.string != text {
+            tv.string = text
+        }
     }
 
     // MARK: Coordinator
 
     final class Coordinator: NSObject, NSTextViewDelegate {
-        let onSubmit: () -> Void
+        var parent: AnswerInputField
         weak var textView: NSTextView?
 
-        init(onSubmit: @escaping () -> Void) { self.onSubmit = onSubmit }
+        init(parent: AnswerInputField) { self.parent = parent }
+
+        func textDidChange(_ notification: Notification) {
+            guard let tv = notification.object as? NSTextView else { return }
+            parent.text = tv.string
+        }
 
         func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-            // Enter without modifiers → show answer
             if commandSelector == #selector(NSResponder.insertNewline(_:)) {
-                let event = NSApp.currentEvent
-                let shiftDown = event?.modifierFlags.contains(.shift) ?? false
+                let shiftDown = NSApp.currentEvent?.modifierFlags.contains(.shift) ?? false
                 if !shiftDown {
-                    onSubmit()
-                    return true   // consumed
+                    parent.onSubmit()
+                    return true
                 }
-                // Shift+Enter → insert a literal newline
                 textView.insertNewlineIgnoringFieldEditor(nil)
                 return true
             }

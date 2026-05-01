@@ -7,7 +7,9 @@ struct ReviewSessionView: View {
     let onFinished: () -> Void
 
     @Environment(\.modelContext) private var modelContext
-    @State private var isEditingCard = false
+    @State private var isEditingCard      = false
+    @State private var answerInputEnabled = false
+    @State private var typedAnswer        = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -15,10 +17,20 @@ struct ReviewSessionView: View {
             Divider()
             cardArea
         }
-        .animation(.easeInOut(duration: 0.15), value: session.phase)
+        .animation(.easeInOut(duration: 0.2), value: session.phase)
         .onAppear { session.start() }
         .navigationTitle(session.decks.count == 1 ? session.decks[0].name : "Study All")
         .toolbar {
+            // Answer input toggle
+            ToolbarItem(placement: .automatic) {
+                Button {
+                    answerInputEnabled.toggle()
+                } label: {
+                    Image(systemName: answerInputEnabled ? "keyboard.fill" : "keyboard")
+                }
+                .help(answerInputEnabled ? "Hide answer input" : "Show answer input")
+            }
+
             // Edit current card
             ToolbarItem(placement: .automatic) {
                 Button {
@@ -29,6 +41,7 @@ struct ReviewSessionView: View {
                 .help("Edit this card")
                 .disabled(session.currentCard == nil)
             }
+
             // End session
             ToolbarItem(placement: .automatic) {
                 Button("End Session") { onFinished() }
@@ -58,43 +71,83 @@ struct ReviewSessionView: View {
 
         case .front:
             if let card = session.currentCard {
-                CardFrontView(card: card, onShowAnswer: session.showAnswer)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .transition(.opacity)
-                    .id(card.id)   // force fresh @State per card
+                CardFrontView(
+                    card: card,
+                    typedAnswer: $typedAnswer,
+                    answerInputEnabled: answerInputEnabled,
+                    onShowAnswer: session.showAnswer
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.asymmetric(
+                    insertion: .opacity,
+                    removal: .move(edge: .leading).combined(with: .opacity)
+                ))
+                .id(card.id)
             }
 
         case .back(let previews):
             if let card = session.currentCard {
                 VStack(spacing: 0) {
-                    CardBackView(card: card)
+                    CardBackView(card: card, typedAnswer: typedAnswer)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     Divider()
                     RatingBarView(previews: previews) { rating in
+                        typedAnswer = ""
                         session.rate(rating)
                     }
                 }
-                .transition(.opacity)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .opacity
+                ))
             }
 
         case .finished(let summary):
             SessionSummaryView(summary: summary, onDismiss: onFinished)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.opacity)
         }
     }
 
     // MARK: - Progress header
 
+    private var deckColor: Color {
+        if session.decks.count == 1 {
+            return Color(hex: session.decks[0].colorHex) ?? .accentColor
+        }
+        return .accentColor
+    }
+
     private var progressHeader: some View {
-        VStack(spacing: 6) {
-            ProgressView(value: session.progress)
-                .tint(.accentColor)
-                .padding(.horizontal, 16)
+        HStack(spacing: 12) {
+            // Remaining card counts derived from remainingCount + progress
+            let done = Int((session.progress * Double(session.remainingCount + 1)).rounded())
+            Text("\(session.remainingCount) left")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+
+            // Progress bar
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.primary.opacity(0.08))
+                        .frame(height: 6)
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(deckColor)
+                        .frame(width: geo.size.width * session.progress, height: 6)
+                        .animation(.easeInOut(duration: 0.3), value: session.progress)
+                }
+            }
+            .frame(height: 6)
+
             Text("\(Int(session.progress * 100))%")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .monospacedDigit()
         }
-        .padding(.vertical, 10)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
     }
 }
 
@@ -111,10 +164,11 @@ struct SessionSummaryView: View {
                 .font(.system(size: 56))
                 .foregroundStyle(.green)
 
-            Text("Session Complete!")
-                .font(.title).fontWeight(.bold)
+            Text("Session Complete")
+                .font(.custom("Georgia", size: 28))
+                .fontWeight(.semibold)
 
-            Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 12) {
+            Grid(alignment: .leading, horizontalSpacing: 32, verticalSpacing: 14) {
                 GridRow {
                     statLabel("Reviewed",  value: "\(summary.totalReviewed)")
                     statLabel("New cards", value: "\(summary.newCardsStudied)")
@@ -131,21 +185,26 @@ struct SessionSummaryView: View {
                     statLabel("Duration", value: formattedDuration)
                 }
             }
-            .padding(24)
-            .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
+            .padding(28)
+            .background(.quaternary, in: RoundedRectangle(cornerRadius: 14))
 
             Button("Done", action: onDismiss)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .keyboardShortcut(.return, modifiers: [])
         }
-        .padding(40)
+        .padding(48)
     }
 
     private func statLabel(_ label: String, value: String, color: Color = .primary) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
-            Text(value).font(.title3).fontWeight(.semibold).foregroundStyle(color)
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.custom("Georgia", size: 20))
+                .fontWeight(.semibold)
+                .foregroundStyle(color)
         }
     }
 
