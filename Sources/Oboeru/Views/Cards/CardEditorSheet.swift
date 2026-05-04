@@ -7,26 +7,38 @@ struct CardEditorSheet: View {
     @State private var vm: CardEditorViewModel
     let onDismiss: () -> Void
 
+    // Stored so "Add + Next" can reset the VM for a fresh card
+    private let deck: Deck
+    private let modelContext: ModelContext
+
     init(existingCard: OboerCard? = nil, deck: Deck, modelContext: ModelContext, onDismiss: @escaping () -> Void) {
         _vm = State(initialValue: CardEditorViewModel(editing: existingCard, deck: deck, modelContext: modelContext))
+        self.deck = deck
+        self.modelContext = modelContext
         self.onDismiss = onDismiss
     }
 
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            HStack {
+            HStack(alignment: .center) {
                 Text(vm.isEditing ? "Edit Card" : "New Card")
                     .font(.title2).fontWeight(.semibold)
                 Spacer()
                 if !vm.isEditing {
-                    Picker("Type", selection: $vm.cardType) {
-                        ForEach(CardType.allCases, id: \.self) { type in
-                            Text(type == .basic ? "Basic" : "Cloze").tag(type)
+                    VStack(spacing: 2) {
+                        Picker("Type", selection: $vm.cardType) {
+                            ForEach(CardType.allCases, id: \.self) { type in
+                                Text(type == .basic ? "Basic" : "Cloze").tag(type)
+                            }
                         }
+                        .pickerStyle(.segmented)
+                        .frame(width: 160)
+
+                        Text("⌘1 · ⌘2")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
                     }
-                    .pickerStyle(.segmented)
-                    .frame(width: 160)
                 }
             }
             .padding(.horizontal, 24)
@@ -41,10 +53,24 @@ struct CardEditorSheet: View {
                         BasicCardEditorBody(vm: vm)
                     case .cloze:
                         ClozeCardEditorBody(vm: vm)
-                            .onChange(of: vm.clozeText) { vm.updateClozePreview() }
+                            .onChange(of: vm.clozeText) { _, _ in vm.updateClozePreview() }
                     }
                 }
                 .padding(24)
+            }
+            // Transfer content when switching types
+            .onChange(of: vm.cardType) { _, new in
+                switch new {
+                case .cloze:
+                    if vm.clozeText.isEmpty && !vm.frontText.isEmpty {
+                        vm.clozeText = vm.frontText
+                        vm.updateClozePreview()
+                    }
+                case .basic:
+                    if vm.frontText.isEmpty && !vm.clozeText.isEmpty {
+                        vm.frontText = vm.clozeText
+                    }
+                }
             }
 
             Divider()
@@ -52,7 +78,18 @@ struct CardEditorSheet: View {
             HStack {
                 Button("Cancel") { onDismiss() }
                     .keyboardShortcut(.escape, modifiers: [])
+
                 Spacer()
+
+                if !vm.isEditing {
+                    Button("Add + Next") {
+                        try? vm.save()
+                        vm = CardEditorViewModel(deck: deck, modelContext: modelContext)
+                    }
+                    .disabled(!vm.canSave)
+                    .keyboardShortcut(.return, modifiers: [.command, .shift])
+                }
+
                 Button(vm.isEditing ? "Save Changes" : "Add Card") {
                     try? vm.save()
                     onDismiss()
@@ -64,6 +101,20 @@ struct CardEditorSheet: View {
             .padding(16)
         }
         .frame(width: 640, height: 660)
+        // Hidden keyboard shortcuts for type switching (⌘1 / ⌘2)
+        .overlay(alignment: .topLeading) {
+            if !vm.isEditing {
+                ZStack {
+                    Button("") { vm.cardType = .basic }
+                        .keyboardShortcut("1", modifiers: .command)
+                    Button("") { vm.cardType = .cloze }
+                        .keyboardShortcut("2", modifiers: .command)
+                }
+                .opacity(0)
+                .frame(width: 0, height: 0)
+                .allowsHitTesting(false)
+            }
+        }
     }
 }
 
@@ -158,17 +209,21 @@ private struct ClozeCardEditorBody: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
-            TextEditor(text: $vm.clozeText)
-                .font(.body)
-                .frame(minHeight: 100)
-                .padding(8)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
-                .overlay(alignment: .topLeading) {
-                    if vm.clozeText.isEmpty {
-                        Text("e.g. The {{capital::city}} of France is {{Paris}}.")
-                            .foregroundStyle(.tertiary).padding(12).allowsHitTesting(false)
-                    }
+            RichTextEditorWithToolbar(
+                rtfData: $vm.clozeRTFData,
+                plainText: $vm.clozeText,
+                minHeight: 100
+            )
+            .overlay(alignment: .topLeading) {
+                if vm.clozeText.isEmpty {
+                    Text("e.g. The {{capital::city}} of France is {{Paris}}.")
+                        .foregroundStyle(.tertiary)
+                        .font(.body)
+                        .padding(.leading, 12)
+                        .padding(.top, 38) // below the toolbar
+                        .allowsHitTesting(false)
                 }
+            }
 
             if !vm.clozeText.isEmpty {
                 if vm.clozeIsValid {

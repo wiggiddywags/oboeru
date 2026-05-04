@@ -35,6 +35,9 @@ final class CardEditorViewModel {
     var frontSketchData: Data? = nil
     var backSketchData:  Data? = nil
 
+    // Cloze rich text (not persisted to OboerCard; used for formatting in editor only)
+    var clozeRTFData: Data? = nil
+
     private let existingCard: OboerCard?
     private let deck: Deck
     private let modelContext: ModelContext
