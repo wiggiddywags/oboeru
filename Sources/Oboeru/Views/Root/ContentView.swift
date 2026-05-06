@@ -6,7 +6,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var deckListVM: DeckListViewModel?
     @State private var activeSession: StudySession?
-    @State private var showStats = false
+    @State private var showStats = true
 
     var body: some View {
         Group {
