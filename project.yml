@@ -19,6 +19,9 @@ targets:
     sources:
       - path: Sources/Oboeru
         createIntermediateGroups: true
+    dependencies:
+      - sdk: libsqlite3.tbd
+      - sdk: PDFKit.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.wiggiddywags.oboeru

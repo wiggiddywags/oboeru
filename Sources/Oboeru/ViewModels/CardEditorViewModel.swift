@@ -38,6 +38,12 @@ final class CardEditorViewModel {
     // Cloze rich text (not persisted to OboerCard; used for formatting in editor only)
     var clozeRTFData: Data? = nil
 
+    // Tags & reverse
+    var tags: [String] = []
+    var isReversed: Bool = false
+    // Editing convenience — raw comma-separated string bound to the UI text field
+    var tagsText: String = ""
+
     private let existingCard: OboerCard?
     private let deck: Deck
     private let modelContext: ModelContext
@@ -68,6 +74,9 @@ final class CardEditorViewModel {
             self.backVideoExt    = card.backVideoExt
             self.frontSketchData = card.frontSketchData
             self.backSketchData  = card.backSketchData
+            self.tags       = card.tags
+            self.isReversed = card.isReversed
+            self.tagsText   = card.tags.joined(separator: ", ")
         }
     }
 
@@ -97,6 +106,14 @@ final class CardEditorViewModel {
         }
     }
 
+    // Parses tagsText into the tags array
+    func parseTags() {
+        tags = tagsText
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
     private func applyMedia(to card: OboerCard) {
         card.frontRTFData   = frontRTFData
         card.backRTFData    = backRTFData
@@ -112,6 +129,8 @@ final class CardEditorViewModel {
         card.backVideoExt    = backVideoExt
         card.frontSketchData = frontSketchData
         card.backSketchData  = backSketchData
+        card.tags       = tags
+        card.isReversed = isReversed
     }
 
     private func saveBasic() throws {

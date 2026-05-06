@@ -6,11 +6,13 @@ struct DeckEditorSheet: View {
     @State private var name: String = ""
     @State private var selectedColor: String = "#5E9CF0"
     @State private var selectedIcon: String = "rectangle.stack"
+    @State private var selectedParentID: UUID? = nil
     @State private var csvURL: URL? = nil
     @State private var showCSVPicker = false
 
     var existingDeck: Deck?
-    let onSave: (String, String, String, URL?) -> Void
+    let allDecks: [Deck]   // top-level decks for parent picker
+    let onSave: (String, String, String, UUID?, URL?) -> Void
     let onCancel: () -> Void
 
     private let colors = [
@@ -25,30 +27,28 @@ struct DeckEditorSheet: View {
     ]
 
     init(existingDeck: Deck? = nil,
-         onSave: @escaping (String, String, String, URL?) -> Void,
+         allDecks: [Deck] = [],
+         onSave: @escaping (String, String, String, UUID?, URL?) -> Void,
          onCancel: @escaping () -> Void) {
         self.existingDeck = existingDeck
+        self.allDecks = allDecks.filter { existingDeck == nil || $0.id != existingDeck!.id }
         self.onSave = onSave
         self.onCancel = onCancel
         if let deck = existingDeck {
             _name = State(initialValue: deck.name)
             _selectedColor = State(initialValue: deck.colorHex)
             _selectedIcon = State(initialValue: deck.iconName)
+            _selectedParentID = State(initialValue: deck.parentDeckID)
         }
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             Text(existingDeck == nil ? "New Deck" : "Edit Deck")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .padding(.top, 24)
-                .padding(.bottom, 20)
+                .font(.title2).fontWeight(.semibold)
+                .padding(.top, 24).padding(.bottom, 20)
 
-            // Preview
-            deckPreview
-                .padding(.bottom, 24)
+            deckPreview.padding(.bottom, 24)
 
             Divider()
 
@@ -58,49 +58,46 @@ struct DeckEditorSheet: View {
                         .textFieldStyle(.roundedBorder)
                 }
 
-                Section("Color") {
-                    colorPicker
+                Section("Color") { colorPicker }
+                Section("Icon")  { iconPicker  }
+
+                // Parent deck picker (sub-deck support)
+                if !allDecks.isEmpty {
+                    Section("Sub-deck of") {
+                        Picker("Parent Deck", selection: $selectedParentID) {
+                            Text("None (top-level)").tag(UUID?.none)
+                            ForEach(allDecks) { deck in
+                                HStack {
+                                    Image(systemName: deck.iconName)
+                                    Text(deck.name)
+                                }
+                                .tag(Optional(deck.id))
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
                 }
 
-                Section("Icon") {
-                    iconPicker
-                }
-
-                // CSV import only available when creating a new deck
                 if existingDeck == nil {
                     Section {
                         HStack(spacing: 12) {
                             if let url = csvURL {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
+                                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                                 VStack(alignment: .leading, spacing: 1) {
-                                    Text(url.lastPathComponent)
-                                        .font(.subheadline)
-                                        .lineLimit(1)
+                                    Text(url.lastPathComponent).font(.subheadline).lineLimit(1)
                                     Text("Cards will be previewed after creating the deck")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .font(.caption).foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                Button("Remove") { csvURL = nil }
-                                    .buttonStyle(.plain)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.red)
+                                Button("Remove") { csvURL = nil }.buttonStyle(.plain).font(.subheadline).foregroundStyle(.red)
                             } else {
-                                Image(systemName: "doc.badge.plus")
-                                    .foregroundStyle(.secondary)
-                                Text("Import from CSV (optional)")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                Image(systemName: "doc.badge.plus").foregroundStyle(.secondary)
+                                Text("Import from CSV (optional)").font(.subheadline).foregroundStyle(.secondary)
                                 Spacer()
-                                Button("Choose File…") { showCSVPicker = true }
-                                    .buttonStyle(.bordered)
-                                    .controlSize(.small)
+                                Button("Choose File…") { showCSVPicker = true }.buttonStyle(.bordered).controlSize(.small)
                             }
                         }
-                    } header: {
-                        Text("Populate Deck")
-                    }
+                    } header: { Text("Populate Deck") }
                 }
             }
             .formStyle(.grouped)
@@ -114,7 +111,7 @@ struct DeckEditorSheet: View {
                 Button(csvURL != nil ? "Create & Preview Import" : "Save") {
                     let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !trimmed.isEmpty else { return }
-                    onSave(trimmed, selectedColor, selectedIcon, csvURL)
+                    onSave(trimmed, selectedColor, selectedIcon, selectedParentID, csvURL)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -122,15 +119,13 @@ struct DeckEditorSheet: View {
             }
             .padding(16)
         }
-        .frame(width: 400, height: existingDeck == nil ? 590 : 520)
+        .frame(width: 400, height: existingDeck == nil ? 620 : 550)
         .fileImporter(
             isPresented: $showCSVPicker,
             allowedContentTypes: [.commaSeparatedText, .tabSeparatedText, .plainText],
             allowsMultipleSelection: false
         ) { result in
-            if case .success(let urls) = result {
-                csvURL = urls.first
-            }
+            if case .success(let urls) = result { csvURL = urls.first }
         }
     }
 
@@ -141,7 +136,6 @@ struct DeckEditorSheet: View {
                 .foregroundStyle(Color(hex: selectedColor) ?? .accentColor)
                 .frame(width: 36, height: 36)
                 .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
-
             Text(name.isEmpty ? "Deck Name" : name)
                 .font(.headline)
                 .foregroundStyle(name.isEmpty ? .secondary : .primary)
@@ -157,10 +151,7 @@ struct DeckEditorSheet: View {
                     .frame(width: 28, height: 28)
                     .overlay {
                         if hex == selectedColor {
-                            Image(systemName: "checkmark")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.white)
+                            Image(systemName: "checkmark").font(.caption).fontWeight(.bold).foregroundStyle(.white)
                         }
                     }
                     .onTapGesture { selectedColor = hex }
@@ -179,8 +170,7 @@ struct DeckEditorSheet: View {
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                     .overlay {
                         if icon == selectedIcon {
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(Color.accentColor, lineWidth: 1.5)
+                            RoundedRectangle(cornerRadius: 6).stroke(Color.accentColor, lineWidth: 1.5)
                         }
                     }
                     .onTapGesture { selectedIcon = icon }

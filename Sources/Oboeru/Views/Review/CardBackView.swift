@@ -14,7 +14,7 @@ struct CardBackView: View {
 
     private var answeredCorrectly: Bool {
         let typed   = typedAnswer.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let correct = card.backText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let correct = card.effectiveBack.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         return !typed.isEmpty && !correct.isEmpty && typed == correct
     }
 
@@ -32,12 +32,12 @@ struct CardBackView: View {
 
                     // ── Front echo (question, dimmed) ──────────────────────
                     Group {
-                        if let rtf = card.frontRTFData {
+                        if let rtf = card.effectiveFrontRTF {
                             RichTextDisplayView(rtfData: rtf, centered: true)
                                 .frame(minHeight: 24)
                                 .opacity(0.45)
                         } else {
-                            Text(card.displayFront)
+                            Text(card.effectiveFront)
                                 .font(.custom("Georgia", size: 15))
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -64,12 +64,12 @@ struct CardBackView: View {
                     }
 
                     // ── Answer text ────────────────────────────────────────
-                    if let rtf = card.backRTFData {
+                    if let rtf = card.effectiveBackRTF {
                         RichTextDisplayView(rtfData: rtf, centered: true)
                             .frame(minHeight: 40)
                             .padding(.horizontal, 40)
                     } else {
-                        Text(card.displayBack)
+                        Text(card.effectiveBack)
                             .font(.custom("Georgia", size: 26))
                             .fontWeight(.semibold)
                             .multilineTextAlignment(.center)

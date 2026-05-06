@@ -29,7 +29,6 @@ struct CardFrontView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-
             // ── Card content ──────────────────────────────────────────────────
             ScrollView {
                 VStack(spacing: 0) {
@@ -63,7 +62,7 @@ struct CardFrontView: View {
                                 .frame(minHeight: 40)
                                 .padding(.horizontal, 40)
                         } else {
-                            Text(card.displayFront)
+                            Text(card.effectiveFront)
                                 .font(.custom("Georgia", size: 22))
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(4)
@@ -77,26 +76,24 @@ struct CardFrontView: View {
                                 .padding(.horizontal, 40)
                         }
 
-                        // ── Answer input (prominent, centered in card) ─────────
+                        // ── Answer input (inside the card, prominent) ──────────
                         if answerInputEnabled {
                             answerInputSection
                                 .padding(.horizontal, 40)
                                 .transition(.opacity.combined(with: .scale(scale: 0.97)))
                         }
                     }
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 32)
                 }
                 .frame(maxWidth: .infinity)
             }
             .animation(.easeInOut(duration: 0.18), value: answerInputEnabled)
 
-            // ── Bottom bar ────────────────────────────────────────────────────
+            // ── Show Answer button ─────────────────────────────────────────────
             VStack(spacing: 0) {
                 Divider()
-
-                // Show Answer button
                 Button(action: onShowAnswer) {
-                    HStack {
+                    HStack(spacing: 8) {
                         Text("Show Answer")
                             .font(.system(size: 15, weight: .medium))
                         Image(systemName: "chevron.right")
@@ -167,13 +164,25 @@ struct CardFrontView: View {
     }
 
     private var cardTypeTag: some View {
-        Text(card.cardType == .cloze ? "Cloze" : "Basic")
-            .font(.caption2)
-            .fontWeight(.medium)
-            .foregroundStyle(deckColor)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(deckColor.opacity(0.10), in: Capsule())
+        HStack(spacing: 6) {
+            Text(card.cardType == .cloze ? "Cloze" : "Basic")
+                .font(.caption2)
+                .fontWeight(.medium)
+                .foregroundStyle(deckColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(deckColor.opacity(0.10), in: Capsule())
+
+            if card.isReversed {
+                Text("Reversed")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color.purple)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.purple.opacity(0.10), in: Capsule())
+            }
+        }
     }
 }
 
@@ -212,7 +221,6 @@ struct AnswerInputField: NSViewRepresentable {
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let tv = scrollView.documentView as? NSTextView else { return }
-        // Sync external clears (e.g., after rating a card)
         if tv.string != text {
             tv.string = text
         }

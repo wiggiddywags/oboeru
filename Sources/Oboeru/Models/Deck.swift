@@ -13,13 +13,17 @@ final class Deck {
     var fsrsMaxInterval: Double         // default 36500 days (~100 years)
     var isArchived: Bool
 
+    // Sub-deck support: nil = top-level deck
+    var parentDeckID: UUID? = nil
+
     @Relationship(deleteRule: .cascade, inverse: \OboerCard.deck)
     var cards: [OboerCard]
 
     init(
         name: String,
         colorHex: String = "#5E9CF0",
-        iconName: String = "rectangle.stack"
+        iconName: String = "rectangle.stack",
+        parentDeckID: UUID? = nil
     ) {
         self.id = UUID()
         self.name = name
@@ -30,6 +34,7 @@ final class Deck {
         self.fsrsRequestRetention = 0.9
         self.fsrsMaxInterval = 36500
         self.isArchived = false
+        self.parentDeckID = parentDeckID
         self.cards = []
     }
 }

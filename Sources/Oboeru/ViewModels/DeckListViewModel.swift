@@ -32,25 +32,47 @@ final class DeckListViewModel {
     }
 
     func refreshDueCounts() {
-        let now = Date()
         var counts: [UUID: Int] = [:]
         for deck in decks {
             counts[deck.id] = deck.dueCards.count
         }
+        // Roll up sub-deck counts into parent counts
+        for deck in decks where deck.parentDeckID == nil {
+            let childCount = subDecks(of: deck).reduce(0) { $0 + (counts[$1.id] ?? 0) }
+            counts[deck.id] = (counts[deck.id] ?? 0) + childCount
+        }
         // All-decks count stored under UUID.zero as a sentinel
-        counts[.zero] = counts.values.reduce(0, +)
+        counts[.zero] = decks.filter { $0.parentDeckID == nil }.compactMap { counts[$0.id] }.reduce(0, +)
         dueCounts = counts
     }
 
     // MARK: - CRUD
 
     @discardableResult
-    func createDeck(name: String, colorHex: String = "#5E9CF0", iconName: String = "rectangle.stack") -> Deck {
-        let deck = Deck(name: name, colorHex: colorHex, iconName: iconName)
+    func createDeck(name: String, colorHex: String = "#5E9CF0", iconName: String = "rectangle.stack", parentDeckID: UUID? = nil) -> Deck {
+        let deck = Deck(name: name, colorHex: colorHex, iconName: iconName, parentDeckID: parentDeckID)
         modelContext.insert(deck)
         try? modelContext.save()
         load()
         return deck
+    }
+
+    /// Returns the deck and all its immediate sub-decks.
+    func decksForStudy(parentID: UUID) -> [Deck] {
+        guard let parent = decks.first(where: { $0.id == parentID }) else { return [] }
+        let children = decks.filter { $0.parentDeckID == parentID }
+        return [parent] + children
+    }
+
+    /// Returns all sub-decks of a deck recursively.
+    func subDecks(of parent: Deck) -> [Deck] {
+        let direct = decks.filter { $0.parentDeckID == parent.id }
+        return direct + direct.flatMap { subDecks(of: $0) }
+    }
+
+    /// Top-level decks (no parent)
+    var topLevelDecks: [Deck] {
+        decks.filter { $0.parentDeckID == nil }
     }
 
     func deleteDeck(_ deck: Deck) {
@@ -66,10 +88,11 @@ final class DeckListViewModel {
         load()
     }
 
-    func updateDeck(_ deck: Deck, name: String, colorHex: String, iconName: String) {
-        deck.name     = name
-        deck.colorHex = colorHex
-        deck.iconName = iconName
+    func updateDeck(_ deck: Deck, name: String, colorHex: String, iconName: String, parentDeckID: UUID? = nil) {
+        deck.name         = name
+        deck.colorHex     = colorHex
+        deck.iconName     = iconName
+        deck.parentDeckID = parentDeckID
         try? modelContext.save()
         load()
     }
@@ -83,7 +106,8 @@ final class DeckListViewModel {
     func makeStudySession(for targetDeckID: UUID?, settings: AppSettings) -> StudySession {
         let targetDecks: [Deck]
         if let id = targetDeckID, let deck = decks.first(where: { $0.id == id }) {
-            targetDecks = [deck]
+            // Include sub-decks automatically
+            targetDecks = [deck] + subDecks(of: deck)
         } else {
             targetDecks = decks   // study all
         }

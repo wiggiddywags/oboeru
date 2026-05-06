@@ -448,18 +448,41 @@ struct ImportSheetView: View {
 
     @MainActor
     private func runAnkiImport(url: URL) async {
-        let importer = AnkiImporter(modelContext: modelContext)
-        let result = await importer.importAPKG(from: url)
-        if result.cardsCreated == 0 && !result.errors.isEmpty {
-            phase = .failed(message: result.errors.first ?? "Unknown error")
-        } else {
+        do {
+            let ankiDecks = try AnkiImporter.import(from: url)
+            var totalCards = 0
+            for ankiDeck in ankiDecks {
+                let d = Deck(name: ankiDeck.name, colorHex: ankiDeck.colorHex)
+                modelContext.insert(d)
+                for ac in ankiDeck.cards {
+                    if ac.cardType == .cloze, let ct = ac.clozeText {
+                        let siblings = ClozeParser.siblings(for: ct)
+                        for s in siblings {
+                            let card = OboerCard(deck: d, cardType: .cloze,
+                                                frontText: s.maskedText, backText: s.fullText,
+                                                clozeText: ct, clozeOrdinal: s.ordinal)
+                            card.tags = ac.tags
+                            modelContext.insert(card)
+                        }
+                    } else {
+                        let card = OboerCard(deck: d, cardType: .basic,
+                                            frontText: ac.frontText, backText: ac.backText)
+                        card.tags = ac.tags
+                        modelContext.insert(card)
+                    }
+                    totalCards += 1
+                }
+            }
+            try modelContext.save()
             phase = .done(result: ImportSummary(
-                decksCreated: result.decksCreated,
-                cardsCreated: result.cardsCreated,
-                cardsSkipped: result.cardsSkipped,
-                errors: result.errors,
+                decksCreated: ankiDecks.count,
+                cardsCreated: totalCards,
+                cardsSkipped: 0,
+                errors: [],
                 format: .anki
             ))
+        } catch {
+            phase = .failed(message: error.localizedDescription)
         }
     }
 }

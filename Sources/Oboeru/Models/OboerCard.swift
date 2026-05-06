@@ -58,6 +58,12 @@ final class OboerCard {
     @Attribute(.externalStorage) var frontSketchData: Data?
     @Attribute(.externalStorage) var backSketchData: Data?
 
+    // Tags — filterable across decks
+    var tags: [String] = []
+
+    // Reversed: when true the back becomes the question during study
+    var isReversed: Bool = false
+
     // Cloze card content
     // Full source text with {{gap::hint?}} markers.
     // Each unique ordinal (1..N) produces a separate sibling OboerCard.
@@ -146,4 +152,16 @@ extension OboerCard {
             return clozeText ?? backText
         }
     }
+
+    /// Effective front, accounting for isReversed flag.
+    var effectiveFront: String { isReversed ? backText : displayFront }
+
+    /// Effective back, accounting for isReversed flag.
+    var effectiveBack: String  { isReversed ? displayFront : displayBack }
+
+    /// Effective front RTF data, accounting for isReversed flag.
+    var effectiveFrontRTF: Data? { isReversed ? backRTFData : frontRTFData }
+
+    /// Effective back RTF data, accounting for isReversed flag.
+    var effectiveBackRTF: Data?  { isReversed ? frontRTFData : backRTFData }
 }

@@ -75,6 +75,37 @@ struct CardEditorSheet: View {
 
             Divider()
 
+            // ── Tags & options ─────────────────────────────────────────────────
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 16) {
+                    // Tags field
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label("Tags", systemImage: "tag")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        TextField("chapter-1, vocab, important…", text: $vm.tagsText)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.caption)
+                            .onChange(of: vm.tagsText) { _, _ in vm.parseTags() }
+                    }
+
+                    // Reverse toggle
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label("Options", systemImage: "slider.horizontal.3")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Toggle("Study reversed", isOn: $vm.isReversed)
+                            .toggleStyle(.checkbox)
+                            .font(.caption)
+                            .help("Back becomes the question during study")
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 10)
+
+            Divider()
+
             HStack {
                 Button("Cancel") { onDismiss() }
                     .keyboardShortcut(.escape, modifiers: [])
@@ -83,6 +114,7 @@ struct CardEditorSheet: View {
 
                 if !vm.isEditing {
                     Button("Add + Next") {
+                        vm.parseTags()
                         try? vm.save()
                         vm = CardEditorViewModel(deck: deck, modelContext: modelContext)
                     }
@@ -91,6 +123,7 @@ struct CardEditorSheet: View {
                 }
 
                 Button(vm.isEditing ? "Save Changes" : "Add Card") {
+                    vm.parseTags()
                     try? vm.save()
                     onDismiss()
                 }
