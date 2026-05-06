@@ -78,6 +78,7 @@ struct ContentView: View {
                 modelContext: modelContext,
                 onStudy: { startStudy(deckID: deck.id) }
             )
+            .id(deck.id)
         } else {
             emptyState
         }
