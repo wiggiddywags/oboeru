@@ -58,6 +58,9 @@ struct ContentView: View {
             mainDetailView(vm: vm)
         }
         .navigationSplitViewStyle(.balanced)
+        .onChange(of: vm.selectedDeckID) { _, id in
+            if id != nil { showStats = false }
+        }
     }
 
     @ViewBuilder
