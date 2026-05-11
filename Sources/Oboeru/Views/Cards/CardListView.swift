@@ -25,6 +25,7 @@ struct CardListView: View {
             Divider()
             cardList
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .sheet(isPresented: $vm.isShowingCardEditor) { vm.load() } content: {
             CardEditorSheet(
                 existingCard: vm.editingCard,
@@ -184,13 +185,29 @@ struct CardListView: View {
         let color = Color(hex: vm.deck.colorHex) ?? .accentColor
         return Group {
             if cards.isEmpty {
-                ContentUnavailableView(
-                    vm.searchText.isEmpty ? "No Cards" : "No Results",
-                    systemImage: vm.searchText.isEmpty ? "rectangle.stack.badge.plus" : "magnifyingglass",
-                    description: Text(vm.searchText.isEmpty
-                        ? "Tap New Card to add your first card."
-                        : "Try a different search term.")
-                )
+                if vm.searchText.isEmpty {
+                    // Centered, double-clickable empty state
+                    VStack(spacing: 14) {
+                        Image(systemName: "rectangle.stack.badge.plus")
+                            .font(.system(size: 48))
+                            .foregroundStyle(.tertiary)
+                        Text("No Cards")
+                            .font(.title2).fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
+                        Text("Double-click to add your first card.")
+                            .font(.body)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
+                    .onTapGesture(count: 2) { vm.newCardForEditing() }
+                } else {
+                    ContentUnavailableView(
+                        "No Results",
+                        systemImage: "magnifyingglass",
+                        description: Text("Try a different search term.")
+                    )
+                }
             } else if viewMode == .list {
                 List {
                     ForEach(cards) { card in

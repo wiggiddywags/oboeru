@@ -16,6 +16,9 @@ final class Deck {
     // Sub-deck support: nil = top-level deck
     var parentDeckID: UUID? = nil
 
+    // Sidebar ordering (lower = higher in list)
+    var sortOrder: Int = 0
+
     @Relationship(deleteRule: .cascade, inverse: \OboerCard.deck)
     var cards: [OboerCard]
 

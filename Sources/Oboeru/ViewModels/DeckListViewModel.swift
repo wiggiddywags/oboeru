@@ -25,10 +25,26 @@ final class DeckListViewModel {
     func load() {
         let descriptor = FetchDescriptor<Deck>(
             predicate: #Predicate { !$0.isArchived },
-            sortBy: [SortDescriptor(\.createdAt)]
+            sortBy: [SortDescriptor(\.sortOrder), SortDescriptor(\.createdAt)]
         )
         decks = (try? modelContext.fetch(descriptor)) ?? []
         refreshDueCounts()
+    }
+
+    /// Reorder decks within a group (top-level when parentID is nil, or sub-decks of a given parent).
+    func moveDecks(from offsets: IndexSet, to destination: Int, parentID: UUID?) {
+        var group: [Deck]
+        if let pid = parentID {
+            group = decks.filter { $0.parentDeckID == pid }
+        } else {
+            group = topLevelDecks
+        }
+        group.move(fromOffsets: offsets, toOffset: destination)
+        for (index, deck) in group.enumerated() {
+            deck.sortOrder = index
+        }
+        try? modelContext.save()
+        load()
     }
 
     func refreshDueCounts() {
@@ -51,6 +67,9 @@ final class DeckListViewModel {
     @discardableResult
     func createDeck(name: String, colorHex: String = "#5E9CF0", iconName: String = "rectangle.stack", parentDeckID: UUID? = nil) -> Deck {
         let deck = Deck(name: name, colorHex: colorHex, iconName: iconName, parentDeckID: parentDeckID)
+        // Place new deck at the end of its group
+        let siblings = parentDeckID == nil ? topLevelDecks : decks.filter { $0.parentDeckID == parentDeckID }
+        deck.sortOrder = (siblings.map(\.sortOrder).max() ?? -1) + 1
         modelContext.insert(deck)
         try? modelContext.save()
         load()

@@ -31,9 +31,18 @@ struct SidebarView: View {
             Section("Decks") {
                 ForEach(vm.topLevelDecks) { deck in
                     deckRow(deck)
-                    ForEach(vm.decks.filter { $0.parentDeckID == deck.id }) { child in
-                        deckRow(child, isChild: true)
+                    let children = vm.decks.filter { $0.parentDeckID == deck.id }
+                    if !children.isEmpty {
+                        ForEach(children) { child in
+                            deckRow(child, isChild: true)
+                        }
+                        .onMove { from, to in
+                            vm.moveDecks(from: from, to: to, parentID: deck.id)
+                        }
                     }
+                }
+                .onMove { from, to in
+                    vm.moveDecks(from: from, to: to, parentID: nil)
                 }
             }
 
