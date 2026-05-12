@@ -28,6 +28,8 @@ struct SidebarView: View {
     @State private var pendingMarkdownURL: URL? = nil
     @State private var importError: String? = nil
     @State private var showImportError     = false
+    @State private var showDocumentAIImport = false
+    @State private var showURLAIImport      = false
 
     var body: some View {
         List(selection: $vm.selectedDeckID) {
@@ -93,6 +95,14 @@ struct SidebarView: View {
                         }
                         Button { showOboerPicker = true } label: {
                             Label("Open Deck (.oboeru)…", systemImage: "square.and.arrow.down")
+                        }
+                    }
+                    Section("AI Import") {
+                        Button { showDocumentAIImport = true } label: {
+                            Label("Generate from Document…", systemImage: "doc.badge.plus")
+                        }
+                        Button { showURLAIImport = true } label: {
+                            Label("Generate from URL…", systemImage: "globe.badge.chevron.backward")
                         }
                     }
                 } label: {
@@ -200,6 +210,24 @@ struct SidebarView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(importError ?? "Unknown error")
+        }
+        // AI: Document import
+        .sheet(isPresented: $showDocumentAIImport) {
+            DocumentAIImportSheet(
+                allDecks: vm.decks,
+                defaultDeck: vm.selectedDeck,
+                modelContext: modelContext,
+                onDismiss: { showDocumentAIImport = false; vm.load() }
+            )
+        }
+        // AI: URL import
+        .sheet(isPresented: $showURLAIImport) {
+            URLAIImportSheet(
+                allDecks: vm.decks,
+                defaultDeck: vm.selectedDeck,
+                modelContext: modelContext,
+                onDismiss: { showURLAIImport = false; vm.load() }
+            )
         }
         .onAppear { vm.load() }
         .onReceive(NotificationCenter.default.publisher(for: .newDeckRequested)) { _ in
