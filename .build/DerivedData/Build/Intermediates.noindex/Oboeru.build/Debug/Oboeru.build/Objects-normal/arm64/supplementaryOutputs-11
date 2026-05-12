@@ -1,0 +1,23 @@
+{
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Views/Review/ReviewSessionView.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ReviewSessionView.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ReviewSessionView.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ReviewSessionView.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ReviewSessionView.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ReviewSessionView.swiftdeps"
+  },
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Views/Settings/SettingsView.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/SettingsView.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/SettingsView.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/SettingsView.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/SettingsView.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/SettingsView.swiftdeps"
+  },
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Views/Shared/RichTextEditor.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RichTextEditor.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RichTextEditor.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RichTextEditor.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RichTextEditor.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RichTextEditor.swiftdeps"
+  }
+}

@@ -13,6 +13,7 @@ struct SidebarView: View {
     @Bindable var vm: DeckListViewModel
     var onStudy: (UUID?) -> Void
     var onStats: () -> Void
+    var onLibrary: () -> Void
 
     @Environment(\.modelContext) private var modelContext
     @State private var pendingCSVImport: PendingCSVImport? = nil
@@ -47,6 +48,20 @@ struct SidebarView: View {
             }
 
             Section {
+                HStack {
+                    Label("Library", systemImage: "books.vertical.fill")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    let available = LibraryService.allBundles.count
+                    Text("\(available)")
+                        .font(.caption2).fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5).padding(.vertical, 2)
+                        .background(Color.accentColor, in: Capsule())
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { onLibrary() }
+
                 Label("Statistics", systemImage: "chart.bar.fill")
                     .foregroundStyle(.secondary)
                     .onTapGesture { onStats() }

@@ -19,6 +19,9 @@ final class Deck {
     // Sidebar ordering (lower = higher in list)
     var sortOrder: Int = 0
 
+    // Library: non-nil if this deck was installed from the Oboeru Library
+    var libraryBundleID: String? = nil
+
     @Relationship(deleteRule: .cascade, inverse: \OboerCard.deck)
     var cards: [OboerCard]
 

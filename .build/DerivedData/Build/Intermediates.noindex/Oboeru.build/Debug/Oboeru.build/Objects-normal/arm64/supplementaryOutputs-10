@@ -1,0 +1,23 @@
+{
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Models/OboerReviewLog.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/OboerReviewLog.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/OboerReviewLog.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/OboerReviewLog.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/OboerReviewLog.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/OboerReviewLog.swiftdeps"
+  },
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Services/PDFExporter.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/PDFExporter.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/PDFExporter.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/PDFExporter.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/PDFExporter.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/PDFExporter.swiftdeps"
+  },
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Views/Review/RatingBarView.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RatingBarView.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RatingBarView.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RatingBarView.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RatingBarView.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/RatingBarView.swiftdeps"
+  }
+}

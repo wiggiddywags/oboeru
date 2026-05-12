@@ -1,0 +1,23 @@
+{
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/ViewModels/DeckDetailViewModel.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckDetailViewModel.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckDetailViewModel.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckDetailViewModel.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckDetailViewModel.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckDetailViewModel.swiftdeps"
+  },
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/ViewModels/DeckListViewModel.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckListViewModel.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckListViewModel.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckListViewModel.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckListViewModel.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckListViewModel.swiftdeps"
+  },
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Views/Decks/DeckEditorSheet.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckEditorSheet.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckEditorSheet.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckEditorSheet.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckEditorSheet.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/DeckEditorSheet.swiftdeps"
+  }
+}

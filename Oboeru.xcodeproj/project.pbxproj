@@ -34,12 +34,14 @@
 		A4968FAEA739F4B19133A550 /* PDFKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B696FD94C82A75EB90B8C460 /* PDFKit.framework */; };
 		A64ECC64FB2F87E37BEFEFEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E206EE1005524DC40B73B7B /* Assets.xcassets */; };
 		B516C1E55710AE498C49CBBE /* MediaViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3623BC901EF250DB1981F349 /* MediaViews.swift */; };
+		B52B5BA774F5765C03998FA8 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E538561F875F7731468EE830 /* LibraryView.swift */; };
 		B58A993039B30CD576F584C7 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671281486F5735F2C55E8032 /* AppCommands.swift */; };
 		B5D7B43E6AD07DE7C5CC211E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53939F3E61ABF6070D9969B /* SettingsView.swift */; };
 		B7E60376ADFD4303FD52B6A6 /* FSRSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D76549EABF3EB7E0B3F64B /* FSRSService.swift */; };
 		BE93A230B4EBE7D9CA923118 /* DeckShareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55D392ABFDFBB5624224152B /* DeckShareService.swift */; };
 		BFD40DC46996FFD08617E7EE /* CardEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 624483CAFFD6C90AF3C6AAA3 /* CardEditorSheet.swift */; };
 		C36DE889F1A0A4BCF948B48D /* RatingBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D85E9B685EDE08E1B8A05 /* RatingBarView.swift */; };
+		C4CEAACEE88AEC8FE565A75C /* LibraryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E40A43FCFFD727F9F02DB3 /* LibraryService.swift */; };
 		C76A80E37DB767BA6E166428 /* RichTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28ACE38AABFBEB1064712D6 /* RichTextEditor.swift */; };
 		C80E45684A89ECE989EC9B7F /* AnkiImportPreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D3CDE0BD37DBA37E0AC9EC0 /* AnkiImportPreviewSheet.swift */; };
 		CEEB090C32465F591A4054AC /* Deck.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2BD46C3C836C4B541448317 /* Deck.swift */; };
@@ -69,6 +71,7 @@
 		624483CAFFD6C90AF3C6AAA3 /* CardEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorSheet.swift; sourceTree = "<group>"; };
 		671281486F5735F2C55E8032 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
 		857DD11F3127DF492740A256 /* DeckListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeckListViewModel.swift; sourceTree = "<group>"; };
+		86E40A43FCFFD727F9F02DB3 /* LibraryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryService.swift; sourceTree = "<group>"; };
 		8B28CC272E7BACC3EB9D530E /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		9036A7AF3D5C4989C1BF525D /* CardListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardListView.swift; sourceTree = "<group>"; };
 		94FF46C87F75F91CC1C2878C /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
@@ -87,6 +90,7 @@
 		D71D85E9B685EDE08E1B8A05 /* RatingBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingBarView.swift; sourceTree = "<group>"; };
 		DCCED56317B410EC2578B60D /* StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModel.swift; sourceTree = "<group>"; };
 		DDED942632E99B22F2957EF2 /* DeckDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeckDetailViewModel.swift; sourceTree = "<group>"; };
+		E538561F875F7731468EE830 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		EC609301C53043B58E9B1133 /* OboerRating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OboerRating.swift; sourceTree = "<group>"; };
 		F087708EAA7512781A4CCB9F /* StatsDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsDashboardView.swift; sourceTree = "<group>"; };
 		F2BD46C3C836C4B541448317 /* Deck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deck.swift; sourceTree = "<group>"; };
@@ -126,6 +130,14 @@
 				FACC7799721E660BAFFD5086 /* SketchEditorView.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		24BA597A1E1D2D7437C5A2E8 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				E538561F875F7731468EE830 /* LibraryView.swift */,
+			);
+			path = Library;
 			sourceTree = "<group>";
 		};
 		2D698F0F4F876C1F772F6D03 /* Root */ = {
@@ -198,6 +210,7 @@
 				46625513DD55B0C5749316C6 /* Cards */,
 				DCB9E786B6A035A115BB45FC /* Decks */,
 				986105BF76C53C3B267BDA96 /* Import */,
+				24BA597A1E1D2D7437C5A2E8 /* Library */,
 				CB8C57A110CA78CCAEA62008 /* Review */,
 				2D698F0F4F876C1F772F6D03 /* Root */,
 				0F6CA514E120ADF80E520DF3 /* Settings */,
@@ -250,6 +263,7 @@
 				10784953062009AAEB01F3B8 /* CSVImporter.swift */,
 				55D392ABFDFBB5624224152B /* DeckShareService.swift */,
 				30D76549EABF3EB7E0B3F64B /* FSRSService.swift */,
+				86E40A43FCFFD727F9F02DB3 /* LibraryService.swift */,
 				A2C72655A9B8A6AD7DB3101E /* MarkdownImporter.swift */,
 				B2B678D572FDB817B6928A60 /* PDFExporter.swift */,
 				FE7DFC4728ED06C9A2157FB8 /* StatsService.swift */,
@@ -395,6 +409,8 @@
 				BE93A230B4EBE7D9CA923118 /* DeckShareService.swift in Sources */,
 				B7E60376ADFD4303FD52B6A6 /* FSRSService.swift in Sources */,
 				EE7D0474F011793B8C6D1393 /* ImportSheetView.swift in Sources */,
+				C4CEAACEE88AEC8FE565A75C /* LibraryService.swift in Sources */,
+				B52B5BA774F5765C03998FA8 /* LibraryView.swift in Sources */,
 				0BEBA52C337176FF48E57490 /* MarkdownImportPreviewSheet.swift in Sources */,
 				CFF16F46171E2852E9A77494 /* MarkdownImporter.swift in Sources */,
 				B516C1E55710AE498C49CBBE /* MediaViews.swift in Sources */,

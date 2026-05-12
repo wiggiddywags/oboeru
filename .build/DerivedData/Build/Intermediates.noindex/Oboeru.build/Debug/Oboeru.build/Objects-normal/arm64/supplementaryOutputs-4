@@ -1,0 +1,23 @@
+{
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Services/ClozeParser.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ClozeParser.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ClozeParser.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ClozeParser.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ClozeParser.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/ClozeParser.swiftdeps"
+  },
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Views/Cards/CardListView.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardListView.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardListView.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardListView.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardListView.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardListView.swiftdeps"
+  },
+  "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/Sources/Oboeru/Views/Review/CardFrontView.swift" : {
+    "const-values" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardFrontView.swiftconstvalues",
+    "dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardFrontView.d",
+    "diagnostics" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardFrontView.dia",
+    "object" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardFrontView.o",
+    "swift-dependencies" : "/Users/joshwaggoner/Dropbox/Mac/Documents/CC/Oboeru/.build/DerivedData/Build/Intermediates.noindex/Oboeru.build/Debug/Oboeru.build/Objects-normal/arm64/CardFrontView.swiftdeps"
+  }
+}

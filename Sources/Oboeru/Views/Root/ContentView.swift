@@ -7,6 +7,7 @@ struct ContentView: View {
     @State private var deckListVM: DeckListViewModel?
     @State private var activeSession: StudySession?
     @State private var showStats = true
+    @State private var showLibrary = false
 
     var body: some View {
         Group {
@@ -51,7 +52,8 @@ struct ContentView: View {
             SidebarView(
                 vm: vm,
                 onStudy: { deckID in startStudy(deckID: deckID) },
-                onStats: { showStats = true; activeSession = nil }
+                onStats: { showStats = true; showLibrary = false; activeSession = nil },
+                onLibrary: { showLibrary = true; showStats = false; activeSession = nil; vm.selectedDeckID = nil }
             )
             .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
@@ -59,7 +61,7 @@ struct ContentView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .onChange(of: vm.selectedDeckID) { _, id in
-            if id != nil { showStats = false }
+            if id != nil { showStats = false; showLibrary = false }
         }
     }
 
@@ -70,6 +72,8 @@ struct ContentView: View {
                 activeSession = nil
                 vm.refreshDueCounts()
             }
+        } else if showLibrary {
+            LibraryView(vm: vm)
         } else if showStats {
             StatsDashboardView()
         } else if let deck = vm.selectedDeck {
