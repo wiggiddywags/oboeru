@@ -80,7 +80,7 @@ private struct AISettingsTab: View {
 
     @AppStorage("oboeru.claudeModel") private var selectedModel: String = ClaudeModel.haiku.rawValue
     @State private var apiKey      = ""
-    @State private var showKey     = false
+    @State private var showKey     = true   // default visible so ⌘V paste always works
     @State private var keyStatus   = KeyStatus.untested
     @State private var isTesting   = false
 
@@ -106,6 +106,19 @@ private struct AISettingsTab: View {
                     .font(.system(.body, design: .monospaced))
                     .textFieldStyle(.plain)
 
+                    // Paste from clipboard — reliable on macOS regardless of field focus
+                    Button {
+                        if let str = NSPasteboard.general.string(forType: .string)?.trimmingCharacters(in: .whitespacesAndNewlines) {
+                            apiKey    = str
+                            keyStatus = .untested
+                        }
+                    } label: {
+                        Image(systemName: "doc.on.clipboard")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Paste from clipboard")
+
                     Button {
                         showKey.toggle()
                     } label: {
@@ -113,6 +126,7 @@ private struct AISettingsTab: View {
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.borderless)
+                    .help(showKey ? "Hide key" : "Show key")
                 }
 
                 HStack(spacing: 8) {
