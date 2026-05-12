@@ -16,6 +16,10 @@ struct SidebarView: View {
     var onLibrary: () -> Void
 
     @Environment(\.modelContext) private var modelContext
+
+    /// Stores UUIDs of COLLAPSED parent decks (comma-separated). Absent = expanded (default).
+    @AppStorage("oboeru.collapsedDeckIDs") private var collapsedIDsRaw: String = ""
+
     @State private var pendingCSVImport: PendingCSVImport? = nil
     @State private var showAnkiPicker      = false
     @State private var showMarkdownPicker  = false
@@ -31,11 +35,11 @@ struct SidebarView: View {
 
             Section("Decks") {
                 ForEach(vm.topLevelDecks) { deck in
-                    deckRow(deck)
                     let children = vm.decks.filter { $0.parentDeckID == deck.id }
-                    if !children.isEmpty {
+                    deckRow(deck, children: children)
+                    if !children.isEmpty && isExpanded(deck) {
                         ForEach(children) { child in
-                            deckRow(child, isChild: true)
+                            deckRow(child, isChild: true, children: [])
                         }
                         .onMove { from, to in
                             vm.moveDecks(from: from, to: to, parentID: deck.id)
@@ -225,20 +229,37 @@ struct SidebarView: View {
     }
 
     @ViewBuilder
-    private func deckRow(_ deck: Deck, isChild: Bool = false) -> some View {
-        let hasChildren = vm.decks.contains(where: { $0.parentDeckID == deck.id })
+    private func deckRow(_ deck: Deck, isChild: Bool = false, children: [Deck]) -> some View {
         DeckRowView(
             deck: deck,
             dueCount: vm.dueCounts[deck.id] ?? 0,
             isChild: isChild,
-            hasSubDecks: hasChildren,
+            hasSubDecks: !children.isEmpty,
+            isExpanded: isExpanded(deck),
             onStudy: { onStudy(deck.id) },
             onEdit:  { vm.editingDeck = deck; vm.isShowingNewDeckSheet = true },
             onDelete:  { vm.deleteDeck(deck) },
             onArchive: { vm.archiveDeck(deck) },
-            onExport: { exportDeck(deck) }
+            onExport: { exportDeck(deck) },
+            onToggleExpand: { withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) { toggleExpanded(deck) } }
         )
         .tag(deck.id)
+    }
+
+    // MARK: - Collapse state
+
+    private var collapsedIDs: Set<UUID> {
+        Set(collapsedIDsRaw.split(separator: ",").compactMap { UUID(uuidString: String($0)) })
+    }
+
+    private func isExpanded(_ deck: Deck) -> Bool {
+        !collapsedIDs.contains(deck.id)
+    }
+
+    private func toggleExpanded(_ deck: Deck) {
+        var ids = collapsedIDs
+        if ids.contains(deck.id) { ids.remove(deck.id) } else { ids.insert(deck.id) }
+        collapsedIDsRaw = ids.map(\.uuidString).joined(separator: ",")
     }
 
     private func exportDeck(_ deck: Deck) {
@@ -264,11 +285,13 @@ private struct DeckRowView: View {
     let dueCount: Int
     let isChild: Bool
     let hasSubDecks: Bool
+    let isExpanded: Bool
     let onStudy: () -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
     let onArchive: () -> Void
     let onExport: () -> Void
+    let onToggleExpand: () -> Void
 
     var body: some View {
         HStack(spacing: 8) {
@@ -286,13 +309,18 @@ private struct DeckRowView: View {
             Text(deck.name)
                 .lineLimit(1)
 
-            if hasSubDecks {
-                Image(systemName: "folder")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-
             Spacer()
+
+            if hasSubDecks {
+                Button(action: onToggleExpand) {
+                    Image(systemName: "chevron.right")
+                        .font(.caption2).fontWeight(.semibold)
+                        .foregroundStyle(.tertiary)
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                }
+                .buttonStyle(.borderless)
+                .contentShape(Rectangle())
+            }
 
             if dueCount > 0 {
                 Text("\(dueCount)")

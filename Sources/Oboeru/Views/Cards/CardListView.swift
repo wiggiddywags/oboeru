@@ -12,8 +12,8 @@ struct CardListView: View {
 
     enum ViewMode { case list, grid }
 
-    init(deck: Deck, modelContext: ModelContext, onStudy: @escaping () -> Void) {
-        _vm = State(initialValue: DeckDetailViewModel(deck: deck, modelContext: modelContext))
+    init(deck: Deck, subDecks: [Deck] = [], modelContext: ModelContext, onStudy: @escaping () -> Void) {
+        _vm = State(initialValue: DeckDetailViewModel(deck: deck, subDecks: subDecks, modelContext: modelContext))
         self.onStudy = onStudy
     }
 

@@ -79,6 +79,7 @@ struct ContentView: View {
         } else if let deck = vm.selectedDeck {
             CardListView(
                 deck: deck,
+                subDecks: vm.subDecks(of: deck),
                 modelContext: modelContext,
                 onStudy: { startStudy(deckID: deck.id) }
             )

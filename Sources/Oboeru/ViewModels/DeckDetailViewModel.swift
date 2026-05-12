@@ -4,7 +4,9 @@ import SwiftData
 @Observable
 final class DeckDetailViewModel {
 
-    let deck: Deck
+    let deck: Deck                  // primary deck (header display, new card target)
+    let subDecks: [Deck]            // included sub-decks (may be empty)
+    private var allDecks: [Deck] { [deck] + subDecks }
     private(set) var cards: [OboerCard] = []
     var searchText: String = ""
     var filterState: FilterState = .all
@@ -20,22 +22,19 @@ final class DeckDetailViewModel {
 
     private let modelContext: ModelContext
 
-    init(deck: Deck, modelContext: ModelContext) {
+    init(deck: Deck, subDecks: [Deck] = [], modelContext: ModelContext) {
         self.deck = deck
+        self.subDecks = subDecks
         self.modelContext = modelContext
     }
 
     // MARK: - Load
 
     func load() {
-        let deckID = deck.id
-        var descriptor = FetchDescriptor<OboerCard>(
-            sortBy: [SortDescriptor(\.createdAt)]
-        )
-        descriptor.predicate = #Predicate { card in
-            card.deck?.id == deckID
-        }
-        cards = (try? modelContext.fetch(descriptor)) ?? []
+        // Aggregate cards from this deck + all sub-decks, sorted by creation date
+        cards = allDecks
+            .flatMap { $0.cards }
+            .sorted { $0.createdAt < $1.createdAt }
     }
 
     // MARK: - Filtered view
